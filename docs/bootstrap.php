@@ -2,6 +2,12 @@
 
 require __DIR__ . '/../src/php/eZ/Publish/Profiler/bootstrap.php';
 
+if ( extension_loaded( 'xdebug' ) )
+{
+    echo "Performance Tests do not work xdebug.", PHP_EOL;
+    exit( 1 );
+}
+
 $setupFactory = new \eZ\Publish\API\Repository\Tests\SetupFactory\Legacy();
 $repository = $setupFactory->getRepository( true );
 
