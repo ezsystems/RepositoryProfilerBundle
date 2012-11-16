@@ -1,0 +1,21 @@
+{
+    "name": "eZ/Profiler",
+    "minimum-stability": "dev",
+    "repositories": {
+        "ezsystems/ezpublish": {
+            "type": "git",
+            "url": "git://github.com/ezsystems/ezp-next.git"
+        }
+    },
+
+    "require": {
+        "ezsystems/ezpublish": "*",
+        "fzaninotto/faker": "1.1.x-dev"
+    },
+
+    "autoload": {
+        "psr-0": {
+            "eZ\\Publish\\Profiler": "src/php"
+        }
+    }
+}
