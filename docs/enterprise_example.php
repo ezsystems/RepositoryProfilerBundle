@@ -47,7 +47,7 @@ $createTask = new Task(
                 new Actor\Create(
                     5, $commentType
                 ),
-                $articles = new ContentObjectStorage\LimitedRandomized()
+                $articles = new Storage\LimitedRandomized()
             )
         )
     )
@@ -79,7 +79,9 @@ $executor = new Executor\SPI(
     )
 );
 $executor->run();
+echo PHP_EOL;
 
+$articles->reset();
 $executor = new Executor\PAPI(
     $repository,
     array(
@@ -88,4 +90,5 @@ $executor = new Executor\PAPI(
     )
 );
 $executor->run();
+echo PHP_EOL;
 
