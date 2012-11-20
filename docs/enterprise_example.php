@@ -67,19 +67,20 @@ $searchTask = new Task(
     ) )
 ); // */
 
+$logger = new Logger\Statistics();
 $executor = new Executor\SPI(
     $persistenceHandler,
     $repository->getFieldTypeService(),
     array(
         new Constraint\Ratio( $createTask, 1 ),
     ),
+    $logger,
     new Aborter\ContentObjectAttributeCount(
         $dbHandler,
         1000
     )
 );
 $executor->run();
-echo PHP_EOL;
 
 $articles->reset();
 $executor = new Executor\PAPI(
@@ -87,8 +88,14 @@ $executor = new Executor\PAPI(
     array(
         new Constraint\Ratio( $createTask, 1/5 ),
         new Constraint\Ratio( $viewTask, 1 ),
+    ),
+    $logger,
+    new Aborter\ContentObjectAttributeCount(
+        $dbHandler,
+        2000
     )
 );
 $executor->run();
-echo PHP_EOL;
+
+$logger->showSummary();
 
