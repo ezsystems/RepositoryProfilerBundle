@@ -39,7 +39,11 @@ abstract class Executor
 
     public function visitTask( Task $task )
     {
-        $this->visitActor( $task->getNext() );
+        $actor = $task->getNext();
+
+        $this->logger->startActor( $actor );
+        $this->visitActor( $actor );
+        $this->logger->stopActor( $actor );
     }
 
     abstract public function visitActor( Actor $task );
