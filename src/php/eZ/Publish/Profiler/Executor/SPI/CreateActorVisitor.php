@@ -23,7 +23,7 @@ class CreateActorVisitor
 
     public function visit( Actor\Create $actor )
     {
-        $type = $this->checkType( $actor->type );
+        $type = $this->getContentType( $actor->type );
 
         $fields = array();
         foreach ( $type->fieldDefinitions as $fieldDefinition )
@@ -81,21 +81,47 @@ class CreateActorVisitor
         }
     }
 
-    protected function checkType( $type )
+    protected function getContentTypeGroup()
     {
-        // Try to load, if not yet loaded
+        $contentTypeHandler = $this->handler->contentTypeHandler();
+        $identifier = 'profiler-content-type-group';
+        try {
+            return $contentTypeHandler->loadGroupByIdentifier( $identifier );
+        }
+        catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
+        {
+            // Just continue creating the type
+        }
+
+        return $contentTypeHandler->createGroup(
+            new Persistence\Content\Type\Group\CreateStruct( array(
+                'name' => array(
+                    'eng-US' => 'Profiler Group'
+                ),
+                'identifier' => $identifier,
+                'modified' => time(),
+                'modifierId' => 14,
+                'created' => time(),
+                'creatorId' => 14,
+            ) )
+        );
+    }
+
+    protected function getContentType( $type )
+    {
         $contentTypeHandler = $this->handler->contentTypeHandler();
         $identifier = 'profiler-' . $type->name;
         try {
             return $contentTypeHandler->loadByIdentifier( $identifier );
         }
-        catch ( \eZ\Publish\Core\Persistence\Legacy\Exception\TypeNotFound $e )
+        catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
         {
             // Just continue creating the type
         }
 
         $fields = array();
         $position = 1;
+        $group = $this->getContentTypeGroup();
         foreach ( $type->fields as $name => $field )
         {
             switch ( true )
@@ -137,7 +163,8 @@ class CreateActorVisitor
                 'remoteId' => md5( microtime() ),
                 'isContainer' => true,
                 'fieldDefinitions' => $fields,
-                'initialLanguageId' => 'eng-US',
+                'initialLanguageId' => 2,
+                'groupIds' => array( $group->id ),
             ) )
         );
     }
