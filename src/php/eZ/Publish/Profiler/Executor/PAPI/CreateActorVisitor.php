@@ -26,11 +26,6 @@ class CreateActorVisitor
     private $contentTypeGroup;
 
     /**
-     * @var array
-     */
-    private $types;
-
-    /**
      * @param \eZ\Publish\Core\Repository\ContentTypeService $contentTypeService
      * @param \eZ\Publish\Core\Repository\ContentService $contentService
      */
