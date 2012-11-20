@@ -85,12 +85,22 @@ class CreateActorVisitor
 
     protected function checkType( $type )
     {
+        // Check if already loaded in current run
         if ( isset( $this->types[$type->name] ) )
         {
             return $this->types[$type->name];
         }
 
+        // Try to load, if not yet loaded
         $contentTypeHandler = $this->handler->contentTypeHandler();
+        $identifier = 'profiler-' . $type->name;
+        try {
+            return $contentTypeHandler->loadByIdentifier( $identifier );
+        }
+        catch ( \eZ\Publish\Core\Persistence\Legacy\Exception\TypeNotFound $e )
+        {
+            // Just continue creating the type
+        }
 
         $fields = array();
         $position = 1;
@@ -127,7 +137,7 @@ class CreateActorVisitor
                     'eng-US' => $type->name,
                 ),
                 'status' => Persistence\Content\Type::STATUS_DEFINED,
-                'identifier' => $type->name,
+                'identifier' => $identifier,
                 'modified' => time(),
                 'modifierId' => 14,
                 'created' => time(),
