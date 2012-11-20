@@ -12,8 +12,7 @@ namespace eZ\Publish\Profiler;
 
 require __DIR__ . '/../../../../../vendor/autoload.php';
 
-// @TODO: Remove hard system dep:
-require '/home/kore/devel/ezp-next/bootstrap.php';
+require __DIR__ . '/../../../../../vendor/ezsystems/ezpublish/bootstrap.php';
 
 spl_autoload_register(
     function ( $class )
