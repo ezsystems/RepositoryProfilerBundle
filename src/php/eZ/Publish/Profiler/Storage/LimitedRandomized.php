@@ -1,10 +1,10 @@
 <?php
 
-namespace eZ\Publish\Profiler\ContentObjectStorage;
+namespace eZ\Publish\Profiler\Storage;
 
-use eZ\Publish\Profiler\ContentObjectStorage;
+use eZ\Publish\Profiler\Storage;
 
-class LimitedRandomized extends ContentObjectStorage
+class LimitedRandomized extends Storage
 {
     protected $storage = array();
 

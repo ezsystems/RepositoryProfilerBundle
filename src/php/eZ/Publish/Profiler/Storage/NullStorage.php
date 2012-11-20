@@ -1,10 +1,10 @@
 <?php
 
-namespace eZ\Publish\Profiler\ContentObjectStorage;
+namespace eZ\Publish\Profiler\Storage;
 
-use eZ\Publish\Profiler\ContentObjectStorage;
+use eZ\Publish\Profiler\Storage;
 
-class NullStorage extends ContentObjectStorage
+class NullStorage extends Storage
 {
     public function store( $object )
     {

@@ -2,7 +2,7 @@
 
 namespace eZ\Publish\Profiler;
 
-abstract class ContentObjectStorage
+abstract class Storage
 {
     abstract public function store( $object );
 

@@ -4,7 +4,7 @@ namespace eZ\Publish\Profiler\Actor;
 
 use eZ\Publish\Profiler\Actor;
 use eZ\Publish\Profiler\GaussDistributor;
-use eZ\Publish\Profiler\ContentObjectStorage;
+use eZ\Publish\Profiler\Storage;
 
 class Create extends Actor
 {
@@ -16,12 +16,12 @@ class Create extends Actor
 
     public $storage;
 
-    public function __construct( $count, $type, $subActor = null, ContentObjectStorage $storage = null )
+    public function __construct( $count, $type, $subActor = null, Storage $storage = null )
     {
         $this->count = $count;
         $this->subActor = $subActor;
         $this->type = $type;
-        $this->storage = $storage ?: new ContentObjectStorage\NullStorage();
+        $this->storage = $storage ?: new Storage\NullStorage();
     }
 
     public function getFlatList()
