@@ -5,6 +5,7 @@ namespace eZ\Publish\Profiler\Executor;
 use eZ\Publish\Profiler\Executor;
 use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
+use eZ\Publish\Profiler\Logger;
 use eZ\Publish\Profiler\Aborter;
 
 use eZ\Publish\SPI\Persistence;

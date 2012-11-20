@@ -12,6 +12,7 @@ use eZ\Publish\Profiler\Actor;
 use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Executor\PAPI\CreateActorVisitor;
 use eZ\Publish\Profiler\Executor\PAPI\SubtreeActorVisitor;
+use eZ\Publish\Profiler\Logger;
 use eZ\Publish\Profiler\Aborter;
 
 
