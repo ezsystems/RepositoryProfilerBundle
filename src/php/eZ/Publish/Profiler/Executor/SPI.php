@@ -12,9 +12,9 @@ use eZ\Publish\API\Repository\FieldTypeService;
 
 class SPI extends Executor
 {
-    public function __construct( Persistence\Handler $handler, FieldTypeService $fieldTypeService, array $constraints, Aborter $aborter = null )
+    public function __construct( Persistence\Handler $handler, FieldTypeService $fieldTypeService, array $constraints, Logger $logger = null, Aborter $aborter = null )
     {
-        parent::__construct( $constraints, $aborter );
+        parent::__construct( $constraints, $logger, $aborter );
 
         $this->createActorVisitor = new SPI\CreateActorVisitor( $handler, $fieldTypeService );
         $this->subtreeActorVisitor = new SPI\SubtreeActorVisitor( $handler );

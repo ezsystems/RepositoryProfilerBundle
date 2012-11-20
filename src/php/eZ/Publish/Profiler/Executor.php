@@ -6,10 +6,13 @@ abstract class Executor
 {
     public $constraints;
 
+    public $logger;
+
     public $aborter;
 
-    public function __construct( array $constraints, Aborter $aborter = null )
+    public function __construct( array $constraints, Logger $logger = null, Aborter $aborter = null )
     {
+        $this->logger = $logger ?: new Logger\NullLogger();
         $this->aborter = $aborter ?: new Aborter\NoAborter();
         foreach ( $constraints as $constraint )
         {
@@ -24,20 +27,14 @@ abstract class Executor
 
     public function run()
     {
-        $i = 0;
+        $this->logger->startExecutor( $this );
         do {
-            echo '.';
-            if ( ++$i >= 80)
-            {
-                $i = 0;
-                echo PHP_EOL;
-            }
-
             foreach ( $this->constraints as $constraint )
             {
-                $constraint->run( $this );
+                $constraint->run( $this, $this->logger );
             }
         } while ( !$this->aborter->shouldAbort() );
+        $this->logger->stopExecutor( $this );
     }
 
     public function visitTask( Task $task )

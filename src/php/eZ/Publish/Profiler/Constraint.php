@@ -11,6 +11,6 @@ abstract class Constraint
         $this->task = $task;
     }
 
-    abstract public function run( Executor $executor );
+    abstract public function run( Executor $executor, Logger $logger );
 }
 
