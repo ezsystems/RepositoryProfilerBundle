@@ -84,7 +84,7 @@ $executor = new Executor\PAPI(
     $repository,
     array(
         new Constraint\Ratio( $createTask, 1/5 ),
-//        new Constraint\Ratio( $viewTask, 1 ),
+        new Constraint\Ratio( $viewTask, 1 ),
     )
 );
 $executor->run();
