@@ -74,69 +74,72 @@ class CreateActorVisitor
      */
     private function getType( ContentType $type )
     {
-        if ( !isset( $this->types[$type->name] ) ) {
-            $contentTypeCreate = $this->contentTypeService->newContentTypeCreateStruct(
-                'profiler-type-' . $type->name
-            );
-
-            $contentTypeCreate->mainLanguageCode = 'eng-US';
-            $contentTypeCreate->names = array(
-                'eng-US' => $type->name
-            );
-            $contentTypeCreate->creationDate = new \DateTime();
-            $contentTypeCreate->remoteId = sha1(microtime());
-            $contentTypeCreate->isContainer = true;
-            $contentTypeCreate->creatorId = 14;
-            $contentTypeCreate->nameSchema = "<name>";
-            $contentTypeCreate->urlAliasSchema = "<name>";
-
-            $fieldPosition = 1;
-            foreach ( $type->fields as $name => $field )
-            {
-                switch ( true )
-                {
-                    case $field instanceof Field\TextLine:
-                        $contentTypeCreate->addFieldDefinition(
-                            $this->createFieldDefinition( $name, 'ezstring', $fieldPosition )
-                        );
-                        break;
-                    case $field instanceof Field\XmlText:
-                        $contentTypeCreate->addFieldDefinition(
-                            $this->createFieldDefinition( $name, 'ezxmltext', $fieldPosition )
-                        );
-                        break;
-
-                    case $field instanceof Field\Author:
-                        $contentTypeCreate->addFieldDefinition(
-                            $this->createFieldDefinition( $name, 'ezauthor', $fieldPosition, false )
-                        );
-                        break;
-
-                    case $field instanceof Field\TextBlock:
-                        $contentTypeCreate->addFieldDefinition(
-                            $this->createFieldDefinition( $name, 'eztext', $fieldPosition )
-                        );
-                        break;
-                    default:
-                        throw new \RuntimeException(
-                            "No field handler available for: " . get_class( $field )
-                        );
-                }
-                $fieldPosition += 1;
-            }
-
-            $contentTypeDraft = $this->contentTypeService->createContentType(
-                $contentTypeCreate,
-                array(
-                    $this->getContentTypeGroup()
-                )
-            );
-
-            $this->contentTypeService->publishContentTypeDraft($contentTypeDraft);
-            $this->types[$type->name] = $this->contentTypeService->loadContentType($contentTypeDraft->id);
+        $identifier = 'profiler-' . $type->name;
+        try {
+            return $this->contentTypeService->loadContentTypeByIdentifier( $identifier );
+        }
+        catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
+        {
+            // Just continue creating the type
         }
 
-        return $this->types[$type->name];
+        $contentTypeCreate = $this->contentTypeService->newContentTypeCreateStruct( $identifier );
+
+        $contentTypeCreate->mainLanguageCode = 'eng-US';
+        $contentTypeCreate->names = array(
+            'eng-US' => $type->name
+        );
+        $contentTypeCreate->creationDate = new \DateTime();
+        $contentTypeCreate->remoteId = sha1(microtime());
+        $contentTypeCreate->isContainer = true;
+        $contentTypeCreate->creatorId = 14;
+        $contentTypeCreate->nameSchema = "<name>";
+        $contentTypeCreate->urlAliasSchema = "<name>";
+
+        $fieldPosition = 1;
+        foreach ( $type->fields as $name => $field )
+        {
+            switch ( true )
+            {
+                case $field instanceof Field\TextLine:
+                    $contentTypeCreate->addFieldDefinition(
+                        $this->createFieldDefinition( $name, 'ezstring', $fieldPosition )
+                    );
+                    break;
+                case $field instanceof Field\XmlText:
+                    $contentTypeCreate->addFieldDefinition(
+                        $this->createFieldDefinition( $name, 'ezxmltext', $fieldPosition )
+                    );
+                    break;
+
+                case $field instanceof Field\Author:
+                    $contentTypeCreate->addFieldDefinition(
+                        $this->createFieldDefinition( $name, 'ezauthor', $fieldPosition, false )
+                    );
+                    break;
+
+                case $field instanceof Field\TextBlock:
+                    $contentTypeCreate->addFieldDefinition(
+                        $this->createFieldDefinition( $name, 'eztext', $fieldPosition )
+                    );
+                    break;
+                default:
+                    throw new \RuntimeException(
+                        "No field handler available for: " . get_class( $field )
+                    );
+            }
+            $fieldPosition += 1;
+        }
+
+        $contentTypeDraft = $this->contentTypeService->createContentType(
+            $contentTypeCreate,
+            array(
+                $this->getContentTypeGroup()
+            )
+        );
+
+        $this->contentTypeService->publishContentTypeDraft($contentTypeDraft);
+        return $this->contentTypeService->loadContentType($contentTypeDraft->id);
     }
 
     /**
