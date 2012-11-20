@@ -31,5 +31,10 @@ class LimitedRandomized extends ContentObjectStorage
         $key = array_rand( $this->storage );
         return $this->storage[$key];
     }
+
+    public function reset()
+    {
+        $this->storage = array();
+    }
 }
 

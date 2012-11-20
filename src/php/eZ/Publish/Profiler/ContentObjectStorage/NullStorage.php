@@ -15,5 +15,10 @@ class NullStorage extends ContentObjectStorage
     {
         // Just du nothing…
     }
+
+    public function reset()
+    {
+        // Just du nothing…
+    }
 }
 
