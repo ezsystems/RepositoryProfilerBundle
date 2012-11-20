@@ -45,21 +45,25 @@ class CreateActorVisitor
      */
     private function getContentTypeGroup()
     {
-        if ( $this->contentTypeGroup === null )
+        $identifier = 'profiler-content-type-group';
+        try {
+            return $this->contentTypeHandler->loadContentTypeGroupByIdentifier( $identifier );
+        }
+        catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
         {
-            $groupCreateStruct = $this->contentTypeService->newContentTypeGroupCreateStruct(
-                'profiler-content-type-group'
-            );
-
-            $groupCreateStruct->creatorId = 14;
-            $groupCreateStruct->creationDate = new \DateTime();
-
-            $this->contentTypeGroup = $this->contentTypeService->createContentTypeGroup(
-                $groupCreateStruct
-            );
+            // Just continue creating the type
         }
 
-        return $this->contentTypeGroup;
+        $groupCreateStruct = $this->contentTypeService->newContentTypeGroupCreateStruct(
+            'profiler-content-type-group'
+        );
+
+        $groupCreateStruct->creatorId = 14;
+        $groupCreateStruct->creationDate = new \DateTime();
+
+        return $this->contentTypeService->createContentTypeGroup(
+            $groupCreateStruct
+        );
     }
 
     /**
@@ -67,7 +71,7 @@ class CreateActorVisitor
      * @throws \RuntimeException
      * @return \eZ\Publish\Core\Repository\Values\ContentType\ContentType
      */
-    private function getType( ContentType $type )
+    private function getContentType( ContentType $type )
     {
         $identifier = 'profiler-' . $type->name;
         try {
@@ -75,6 +79,7 @@ class CreateActorVisitor
         }
         catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
         {
+            echo $e;
             // Just continue creating the type
         }
 
@@ -167,7 +172,7 @@ class CreateActorVisitor
 
     public function visit(Actor\Create $actor)
     {
-        $type = $this->getType($actor->type);
+        $type = $this->getContentType($actor->type);
 
         $contentCreate = $this->contentService->newContentCreateStruct(
             $type,
