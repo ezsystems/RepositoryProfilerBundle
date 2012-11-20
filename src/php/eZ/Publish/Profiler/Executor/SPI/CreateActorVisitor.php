@@ -15,8 +15,6 @@ class CreateActorVisitor
 
     protected $fieldTypeService;
 
-    protected $types = array();
-
     public function __construct( Persistence\Handler $handler, FieldTypeService $fieldTypeService )
     {
         $this->handler = $handler;
@@ -85,12 +83,6 @@ class CreateActorVisitor
 
     protected function checkType( $type )
     {
-        // Check if already loaded in current run
-        if ( isset( $this->types[$type->name] ) )
-        {
-            return $this->types[$type->name];
-        }
-
         // Try to load, if not yet loaded
         $contentTypeHandler = $this->handler->contentTypeHandler();
         $identifier = 'profiler-' . $type->name;
@@ -131,7 +123,7 @@ class CreateActorVisitor
             }
         }
 
-        return $this->types[$type->name] = $contentTypeHandler->create(
+        return $contentTypeHandler->create(
             new Persistence\Content\Type\CreateStruct( array(
                 'name' => array(
                     'eng-US' => $type->name,
