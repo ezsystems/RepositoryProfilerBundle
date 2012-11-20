@@ -144,9 +144,22 @@ interpreter based on the SPI we currently manage to insert about 60 to 120
 field data values per second into MySQL. The SQLite-Memory storage is *a lot*
 faster.
 
-| SPI-Pure Inserts: ~60-120 attributes per second
-| SPI Read & Write: ~20-50 attributes per second
-| API-Pure Inserts: ~20-50 attributes per second
+Current state on a Thinkpad X220::
+
+    eZ\Publish\Profiler\Executor\SPI: 13.13s:
+     * eZ\Publish\Profiler\Actor\Create: 410 (31.22 per second)
+       - Minimum: 12.87 ms
+       - Average: 31.36 ms
+       - Maximum: 95.15 ms
+    eZ\Publish\Profiler\Executor\PAPI: 186.66s:
+     * eZ\Publish\Profiler\Actor\SubtreeView: 2308 (12.36 per second)
+       - Minimum: 0.00 ms
+       - Average: 66.79 ms
+       - Maximum: 173.39 ms
+     * eZ\Publish\Profiler\Actor\Create: 459 (2.46 per second)
+       - Minimum: 34.37 ms
+       - Average: 69.05 ms
+       - Maximum: 140.79 ms
 
 
 ..
