@@ -1,0 +1,43 @@
+#!/usr/bin/env php
+<?php
+
+$log = @$argv[1] ?: '/var/log/mysql/mysql-slow.log';
+
+$examples = array();
+$queries = array_count_values(
+    array_map(
+        function ( $query ) use ( &$examples )
+        {
+            $example = $query;
+            $query = preg_replace( '(\\d+)', '%d', $query );
+            $query = preg_replace( '(\'[^\']+\')', '%s', $query );
+
+            $examples[$query] = $example;
+            return $query;
+        },
+        array_filter(
+            array_filter(
+                array_filter(
+                    array_map( 'trim', file( $log ) )
+                ),
+                function ( $line )
+                {
+                    return $line[0] !== '#';
+                }
+            ),
+            function ( $query )
+            {
+                return strpos( $query, 'SET timestamp' ) !== 0;
+            }
+        )
+    )
+);
+arsort( $queries );
+
+foreach ( $queries as $query => $count )
+{
+    echo "Query:   ", $query, PHP_EOL;
+    echo "Count:   ", $count, PHP_EOL;
+    echo "Explain: EXPLAIN ", $examples[$query], PHP_EOL, PHP_EOL;
+}
+
