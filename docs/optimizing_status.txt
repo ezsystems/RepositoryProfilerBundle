@@ -1,0 +1,196 @@
+Performance statistics
+======================
+
+Start::
+
+    eZ\Publish\Profiler\Executor\SPI: 16.77s:
+     * eZ\Publish\Profiler\Actor\Create: 410 (24.45 per second)
+       - Minimum: 18.34 ms
+       - Average: 40.15 ms
+       - Maximum: 71.62 ms
+    eZ\Publish\Profiler\Executor\PAPI: 268.99s:
+     * eZ\Publish\Profiler\Actor\SubtreeView: 2309 (8.58 per second)
+       - Minimum: 0.01 ms
+       - Average: 95.96 ms
+       - Maximum: 210.13 ms
+     * eZ\Publish\Profiler\Actor\Create: 459 (1.71 per second)
+       - Minimum: 61.48 ms
+       - Average: 101.25 ms
+       - Maximum: 188.41 ms
+
+
+Table quoting patch::
+
+    eZ\Publish\Profiler\Executor\SPI: 15.59s:
+     * eZ\Publish\Profiler\Actor\Create: 408 (26.17 per second)
+       - Minimum: 18.56 ms
+       - Average: 37.47 ms
+       - Maximum: 72.94 ms
+    eZ\Publish\Profiler\Executor\PAPI: 255.19s:
+     * eZ\Publish\Profiler\Actor\SubtreeView: 2191 (8.59 per second)
+       - Minimum: 0.01 ms
+       - Average: 94.03 ms
+       - Maximum: 205.68 ms
+     * eZ\Publish\Profiler\Actor\Create: 457 (1.79 per second)
+       - Minimum: 53.81 ms
+       - Average: 105.51 ms
+       - Maximum: 266.53 ms
+
+Custom quoting::
+
+    eZ\Publish\Profiler\Executor\SPI: 15.66s:
+     * eZ\Publish\Profiler\Actor\Create: 410 (26.19 per second)
+       - Minimum: 17.95 ms
+       - Average: 37.44 ms
+       - Maximum: 72.09 ms
+    eZ\Publish\Profiler\Executor\PAPI: 228.02s:
+     * eZ\Publish\Profiler\Actor\SubtreeView: 2183 (9.57 per second)
+       - Minimum: 0.01 ms
+       - Average: 84.88 ms
+       - Maximum: 205.42 ms
+     * eZ\Publish\Profiler\Actor\Create: 460 (2.02 per second)
+       - Minimum: 50.28 ms
+       - Average: 90.94 ms
+       - Maximum: 176.78 ms
+
+Simple field type cache::
+
+    eZ\Publish\Profiler\Executor\SPI: 14.36s:
+     * eZ\Publish\Profiler\Actor\Create: 409 (28.49 per second)
+       - Minimum: 16.82 ms
+       - Average: 34.42 ms
+       - Maximum: 78.50 ms
+    eZ\Publish\Profiler\Executor\PAPI: 195.57s:
+     * eZ\Publish\Profiler\Actor\SubtreeView: 2333 (11.93 per second)
+       - Minimum: 0.01 ms
+       - Average: 66.59 ms
+       - Maximum: 175.93 ms
+     * eZ\Publish\Profiler\Actor\Create: 459 (2.35 per second)
+       - Minimum: 45.56 ms
+       - Average: 85.48 ms
+
+Full in-memory cache for content-types::
+
+    eZ\Publish\Profiler\Executor\SPI: 14.75s:
+     * eZ\Publish\Profiler\Actor\Create: 410 (27.79 per second)
+       - Minimum: 14.95 ms
+       - Average: 35.22 ms
+       - Maximum: 80.33 ms
+    eZ\Publish\Profiler\Executor\PAPI: 123.79s:
+     * eZ\Publish\Profiler\Actor\SubtreeView: 2229 (18.01 per second)
+       - Minimum: 0.01 ms
+       - Average: 42.52 ms
+       - Maximum: 112.99 ms
+     * eZ\Publish\Profiler\Actor\Create: 459 (3.71 per second)
+       - Minimum: 33.08 ms
+       - Average: 61.22 ms
+       - Maximum: 519.51 ms
+
+Re-enabling language cache::
+
+    eZ\Publish\Profiler\Executor\SPI: 12.19s:
+     * eZ\Publish\Profiler\Actor\Create: 410 (33.65 per second)
+       - Minimum: 12.88 ms
+       - Average: 29.00 ms
+       - Maximum: 77.31 ms
+    eZ\Publish\Profiler\Executor\PAPI: 92.85s:
+     * eZ\Publish\Profiler\Actor\SubtreeView: 2193 (23.62 per second)
+       - Minimum: 0.01 ms
+       - Average: 30.68 ms
+       - Maximum: 89.10 ms
+     * eZ\Publish\Profiler\Actor\Create: 459 (4.94 per second)
+       - Minimum: 29.94 ms
+       - Average: 53.64 ms
+       - Maximum: 128.82 ms
+
+At this state ``PDO::execute`` consumes about 15% of the time in the profiler.
+Since PHP code is executed around 12 times slower (but obviously not MySQL)
+during profiling we can assume that about 70% of the time is consumed by
+Queries now.
+
+Most important by now:
+
+* ``Content::load()``
+* ``Role::loadRolesForContent()``
+* ``Content::loadRelations()``
+* ``Role::fetchUserGroups()``
+
+Query profiling
+===============
+
+Meaningless LIKE operations
+---------------------------
+
+Query:
+    ``SELECT * FROM `eznode_assignment` WHERE ( `contentobject_id` LIKE %d AND `contentobject_version` LIKE %d AND `op_code` LIKE %d ) ORDER BY id;``
+Fix:
+    Commit 06315dc46a8e5b614544543546a0c0ecda069750
+
+Content tree remote ID has no index
+-----------------------------------
+
+Query:
+    ``SELECT * FROM `ezcontentobject_tree` WHERE `remote_id` = %s;``
+Fix:
+    ``CREATE INDEX ezcontentobject_tree_remote_id ON ezcontentobject_tree (remote_id);``
+
+No key for contentclass table
+-----------------------------
+
+Query:
+    Very long qurey…
+Fix:
+    ``CREATE INDEX ezcontentclass_identifier ON ezcontentclass (identifier, version);``
+
+No key on contentobject version table
+-------------------------------------
+
+Query:
+    ``EXPLAIN SELECT COUNT( * ) FROM `ezcontentobject` INNER JOIN ezcontentobject_version ON ezcontentobject.id = ezcontentobject_version.contentobject_id WHERE ezcontentobject_version.status = 1 AND `ezcontentobject`.`id` IN ( SELECT `ezcontentobject_tree`.`contentobject_id` FROM `ezcontentobject_tree` WHERE `ezcontentobject_tree`.`path_string` LIKE '/1/2/62/430/615/%' );``
+Fix:
+    ``CREATE INDEX ezcontentobject_version_object_status ON ezcontentobject_version (contentobject_id, status);``
+
+User permissions, multiple keys missing
+---------------------------------------
+
+Query:
+    ``SELECT `ezuser_role`.`contentobject_id` AS `ezuser_role_contentobject_id`, `ezrole`.`id` AS `ezrole_id`, `ezrole`.`name` AS `ezrole_name`, `ezpolicy`.`id` AS `ezpolicy_id`, `ezpolicy`.`function_name` AS `ezpolicy_function_name`, `ezpolicy`.`module_name` AS `ezpolicy_module_name`, `ezpolicy_limitation`.`identifier` AS `ezpolicy_limitation_identifier`, `ezpolicy_limitation_value`.`value` AS `ezpolicy_limitation_value_value` FROM `ezuser_role` AS `ezuser_role_search` LEFT JOIN `ezrole` ON `ezrole`.`id` = `ezuser_role_search`.`role_id` LEFT JOIN `ezuser_role` ON `ezuser_role`.`role_id` = `ezrole`.`id` LEFT JOIN `ezpolicy` ON `ezpolicy`.`role_id` = `ezrole`.`id` LEFT JOIN `ezpolicy_limitation` ON `ezpolicy_limitation`.`policy_id` = `ezpolicy`.`id` LEFT JOIN `ezpolicy_limitation_value` ON `ezpolicy_limitation_value`.`limitation_id` = `ezpolicy_limitation`.`id` WHERE `ezuser_role_search`.`contentobject_id` IN ( %s );``
+Fix:
+    ``CREATE INDEX ezpolicy_limitation_value_limitation_id ON ezpolicy_limitation_value (limitation_id);``
+    ``CREATE INDEX ezpolicy_role_id ON ezpolicy (role_id);``
+    
+Results:
+    eZ\Publish\Profiler\Executor\SPI: 11.31s:
+     * eZ\Publish\Profiler\Actor\Create: 410 (36.25 per second)
+       - Minimum: 13.02 ms
+       - Average: 26.81 ms
+       - Maximum: 64.84 ms
+    eZ\Publish\Profiler\Executor\PAPI: 87.62s:
+     * eZ\Publish\Profiler\Actor\SubtreeView: 2249 (25.67 per second)
+       - Minimum: 0.01 ms
+       - Average: 28.36 ms
+       - Maximum: 71.70 ms
+     * eZ\Publish\Profiler\Actor\Create: 458 (5.23 per second)
+       - Minimum: 29.94 ms
+       - Average: 49.98 ms
+       - Maximum: 137.36 ms
+
+Optimizing find queries
+=======================
+
+There are two variants of search / find queries, which use subselects and
+already show non-index usage propblems in our small example:
+
+* ``SELECT `ezcontentobject`.`id` FROM `ezcontentobject` WHERE `ezcontentobject`.`id` IN ( SELECT `ezcontentobject_tree`.`contentobject_id` FROM `ezcontentobject_tree` WHERE `ezcontentobject_tree`.`path_string` LIKE %s ) LIMIT %d OFFSET %d;``
+* ``SELECT COUNT( * ) FROM `ezcontentobject` INNER JOIN ezcontentobject_version ON ezcontentobject.id = ezcontentobject_version.contentobject_id WHERE ezcontentobject_version.status = %d AND `ezcontentobject`.`id` IN ( SELECT `ezcontentobject_tree`.`contentobject_id` FROM `ezcontentobject_tree` WHERE `ezcontentobject_tree`.`path_string` LIKE %s );``
+
+Thus it makes sense to rafactor the legacy search to use joins instead of
+subqueries.
+
+
+..
+   Local Variables:
+   mode: rst
+   fill-column: 79
+   End: 
+   vim: et syn=rst tw=79
