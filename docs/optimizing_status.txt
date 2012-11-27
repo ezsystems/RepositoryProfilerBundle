@@ -138,7 +138,7 @@ No key for contentclass table
 -----------------------------
 
 Query:
-    Very long qurey…
+    Very long query…
 Fix:
     ``CREATE INDEX ezcontentclass_identifier ON ezcontentclass (identifier, version);``
 
@@ -203,7 +203,9 @@ already show non-index usage propblems in our small example:
 * ``SELECT COUNT( * ) FROM `ezcontentobject` INNER JOIN ezcontentobject_version ON ezcontentobject.id = ezcontentobject_version.contentobject_id WHERE ezcontentobject_version.status = %d AND `ezcontentobject`.`id` IN ( SELECT `ezcontentobject_tree`.`contentobject_id` FROM `ezcontentobject_tree` WHERE `ezcontentobject_tree`.`path_string` LIKE %s );``
 
 Thus it makes sense to rafactor the legacy search to use joins instead of
-subqueries.
+subqueries. This can be done for each ``CriterionHandler``. I implemented it
+for the ``Subtree`` criterion, so that the queries mentioned above are now
+properly using indexes. See commit d6a740d2ba7fa138eda0b2c19ad5e358227ccb1b.
 
 
 ..
