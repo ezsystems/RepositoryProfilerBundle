@@ -159,7 +159,8 @@ Fix:
     ``CREATE INDEX ezpolicy_limitation_value_limitation_id ON ezpolicy_limitation_value (limitation_id);``
     ``CREATE INDEX ezpolicy_role_id ON ezpolicy (role_id);``
     
-Results:
+Results::
+
     eZ\Publish\Profiler\Executor\SPI: 11.31s:
      * eZ\Publish\Profiler\Actor\Create: 410 (36.25 per second)
        - Minimum: 13.02 ms
