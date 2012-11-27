@@ -207,6 +207,24 @@ subqueries. This can be done for each ``CriterionHandler``. I implemented it
 for the ``Subtree`` criterion, so that the queries mentioned above are now
 properly using indexes. See commit d6a740d2ba7fa138eda0b2c19ad5e358227ccb1b.
 
+After additional refactoring out ``getIdentifier`` calls I currently manage::
+
+    eZ\Publish\Profiler\Executor\SPI: 3.17s:
+     * eZ\Publish\Profiler\Actor\Create: 410 (129.50 per second)
+       - Minimum: 6.16 ms
+       - Average: 7.49 ms
+       - Maximum: 16.26 ms
+    eZ\Publish\Profiler\Executor\PAPI: 44.18s:
+     * eZ\Publish\Profiler\Actor\SubtreeView: 2297 (51.99 per second)
+       - Minimum: 0.01 ms
+       - Average: 14.46 ms
+       - Maximum: 26.92 ms
+     * eZ\Publish\Profiler\Actor\Create: 458 (10.37 per second)
+       - Minimum: 19.90 ms
+       - Average: 23.02 ms
+       - Maximum: 293.44 ms
+
+
 
 ..
    Local Variables:
