@@ -1,6 +1,9 @@
 Performance statistics
 ======================
 
+All code related commits happened in the ``performance`` branch in the ezp-next
+repository: https://github.com/ezsystems/ezp-next/tree/performance
+
 Start::
 
     eZ\Publish\Profiler\Executor\SPI: 16.77s:
@@ -180,8 +183,8 @@ Summary: Indexes
 ----------------
 
 Since additional indexes always reduce the insert performance and require
-additional memory the number of indexes should not be reduces indefinitely.
-Since the usage pattern of the database will have changed over the years, I
+additional memory the number of indexes should not be increased indefinitely.
+Since the usage patterns of the database might have changed over the years, I
 suggest:
 
 1) Remove all indexes
@@ -190,7 +193,7 @@ suggest:
 4) Re-add indexes for queries
 
 Since the integration tests are supposed to cover all API operations this
-should be sufficient to cover everything, which is actually queried in the
+should be sufficient to cover everything, which is actually queried from the
 database.
 
 Optimizing find queries
