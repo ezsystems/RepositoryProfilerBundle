@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+require __DIR__ . '/../../vendor/autoload.php';
+
 $log = @$argv[1] ?: '/var/log/mysql/mysql-slow.log';
 
 $examples = array();
@@ -36,7 +38,7 @@ arsort( $queries );
 
 foreach ( $queries as $query => $count )
 {
-    echo "Query:   ", $query, PHP_EOL;
+    echo strip_tags( SqlFormatter::format( $query ) ), PHP_EOL, PHP_EOL;
     echo "Count:   ", $count, PHP_EOL;
     echo "Explain: EXPLAIN ", $examples[$query], PHP_EOL, PHP_EOL;
 }
