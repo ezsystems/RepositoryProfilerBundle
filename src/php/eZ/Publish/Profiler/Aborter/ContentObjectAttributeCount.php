@@ -9,6 +9,8 @@ class ContentObjectAttributeCount extends Aborter
 {
     protected $dbHandler;
 
+    protected $initialCount = null;
+
     protected $attributeCount;
 
     public function __construct( EzcDbHandler $dbHandler, $attributeCount )
@@ -27,8 +29,13 @@ class ContentObjectAttributeCount extends Aborter
         $statement->execute();
 
         $result = $statement->fetchAll( \PDO::FETCH_COLUMN );
+        $count  = $result[0];
 
-        return $result[0] >= $this->attributeCount;
+        if ($this->initialCount === null) {
+            $this->initialCount = $count;
+        }
+
+        return $count >= ( $this->attributeCount + $this->initialCount );
     }
 }
 
