@@ -28,10 +28,9 @@ class PAPI extends Executor
      * @param array $constraints
      * @param \eZ\Publish\Profiler\Aborter $aborter
      */
-    public function __construct( Repository $repository, $constraints, Logger $logger = null, Aborter $aborter = null )
+    public function __construct( Repository $repository, Logger $logger )
     {
-        parent::__construct( $constraints, $logger, $aborter );
-
+        $this->logger = $logger;
         $this->repository = $repository;
 
         $this->createActorVisitor = new CreateActorVisitor(

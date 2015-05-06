@@ -4,36 +4,22 @@ namespace eZ\Publish\Profiler;
 
 abstract class Executor
 {
-    public $constraints;
+    protected $logger;
 
-    public $logger;
-
-    public $aborter;
-
-    public function __construct( array $constraints, Logger $logger = null, Aborter $aborter = null )
+    public function __construct( Logger $logger = null )
     {
         $this->logger = $logger ?: new Logger\NullLogger();
-        $this->aborter = $aborter ?: new Aborter\NoAborter();
-        foreach ( $constraints as $constraint )
-        {
-            $this->addConstraint( $constraint );
-        }
     }
 
-    public function addConstraint( Constraint $constraint )
-    {
-        $this->constraints[] = $constraint;
-    }
-
-    public function run()
+    public function run( array $constraints, Aborter $aborter )
     {
         $this->logger->startExecutor( $this );
         do {
-            foreach ( $this->constraints as $constraint )
+            foreach ( $constraints as $constraint )
             {
                 $constraint->run( $this, $this->logger );
             }
-        } while ( !$this->aborter->shouldAbort() );
+        } while ( !$aborter->shouldAbort() );
         $this->logger->stopExecutor( $this );
     }
 
