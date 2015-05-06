@@ -1,8 +1,8 @@
 <?php
 namespace eZ\Publish\Profiler\Executor\PAPI;
 
-use eZ\Publish\Core\Repository\ContentTypeService;
-use eZ\Publish\Core\Repository\ContentService;
+use eZ\Publish\API\Repository\ContentTypeService;
+use eZ\Publish\API\Repository\ContentService;
 
 use eZ\Publish\Profiler\ContentType;
 use eZ\Publish\Profiler\Field;

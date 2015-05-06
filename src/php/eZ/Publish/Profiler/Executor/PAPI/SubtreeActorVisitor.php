@@ -1,9 +1,9 @@
 <?php
 namespace eZ\Publish\Profiler\Executor\PAPI;
 
-use eZ\Publish\Core\Repository\ContentService;
-use eZ\Publish\Core\Repository\LocationService;
-use eZ\Publish\Core\Repository\SearchService;
+use eZ\Publish\API\Repository\ContentService;
+use eZ\Publish\API\Repository\LocationService;
+use eZ\Publish\API\Repository\SearchService;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 
