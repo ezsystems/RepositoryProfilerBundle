@@ -1,5 +1,5 @@
 {
-    "name": "ezsystems/performance-bundle",
+    "name": "ezsystems/profiler-bundle",
     "type": "symfony-bundle",
     "require": {
         "ezsystems/ezpublish-kernel": "~5.0",
