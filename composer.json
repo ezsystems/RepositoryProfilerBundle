@@ -1,17 +1,10 @@
 {
-    "name": "eZ/Profiler",
-    "minimum-stability": "dev",
-    "repositories": {
-        "ezsystems/ezpublish": {
-            "type": "git",
-            "url": "git://github.com/ezsystems/ezp-next.git"
-        }
-    },
-
+    "name": "ezsystems/performance-bundle",
+    "type": "symfony-bundle",
     "require": {
-        "ezsystems/ezpublish": "*",
-        "fzaninotto/faker": "1.1.x-dev",
-        "jdorn/sql-formatter": "1.2.*@dev"
+        "ezsystems/ezpublish-kernel": "~5.0",
+        "fzaninotto/faker": "~1.4",
+        "jdorn/sql-formatter": "~1.2"
     },
 
     "autoload": {
