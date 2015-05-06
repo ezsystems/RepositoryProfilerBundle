@@ -7,35 +7,36 @@ use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
 
 use eZ\Publish\SPI\Persistence;
-use eZ\Publish\API\Repository\FieldTypeService;
+use eZ\Publish\Core\Base\Container\ApiLoader\FieldTypeCollectionFactory;
 
 class CreateActorVisitor
 {
     protected $handler;
 
-    protected $fieldTypeService;
+    protected $fieldTypeCollection;
 
-    public function __construct( Persistence\Handler $handler, FieldTypeService $fieldTypeService )
+    public function __construct( Persistence\Handler $handler, FieldTypeCollectionFactory $fieldTypeCollection )
     {
         $this->handler = $handler;
-        $this->fieldTypeService = $fieldTypeService;
+        $this->fieldTypeCollection = $fieldTypeCollection;
     }
 
     public function visit( Actor\Create $actor )
     {
-        $type = $this->getContentType( $actor->type );
+        $language = $this->getLanguage( 'eng-US', 'English (US)' );
+        $type = $this->getContentType( $actor->type, $language );
 
         $fields = array();
         foreach ( $type->fieldDefinitions as $fieldDefinition )
         {
-            $fieldType = $this->fieldTypeService->buildFieldType( $fieldDefinition->fieldType );
+            $fieldType = $this->getFieldType( $fieldDefinition->fieldType );
 
             $data = $actor->type->fields[$fieldDefinition->identifier]->dataProvider->get();
             $value = $fieldType->acceptValue( $data );
             $fields[] = new Persistence\Content\Field( array(
                 'fieldDefinitionId' => $fieldDefinition->id,
                 'type' => $fieldDefinition->fieldType,
-                'languageCode' => 'eng-US',
+                'languageCode' => $language->languageCode,
                 'value' => $fieldType->toPersistenceValue( $value ),
             ) );
         }
@@ -44,7 +45,7 @@ class CreateActorVisitor
         $content = $contentHandler->create(
             new Persistence\Content\CreateStruct( array(
                 'name' => array(
-                    'eng-US' => $name = md5( microtime() ),
+                    $language->languageCode => $name = md5( microtime() ),
                 ),
                 'typeId' => $type->id,
                 'sectionId' => 1,
@@ -58,7 +59,7 @@ class CreateActorVisitor
                 ),
                 'fields' => $fields,
                 'remoteId' => md5( microtime() ),
-                'initialLanguageId' => 2,
+                'initialLanguageId' => $language->id,
                 'modified' => time(),
             ) )
         );
@@ -81,6 +82,50 @@ class CreateActorVisitor
         }
     }
 
+    /**
+     * Get field type
+     *
+     * @param string $name
+     * @return FieldType
+     */
+    protected function getFieldType( $name )
+    {
+        $fieldTypes = $this->fieldTypeCollection->getFieldTypes();
+
+        if (isset($fieldTypes[$name])) {
+            return $fieldTypes[$name]();
+        }
+
+        throw new \OutOfBoundsException("unknwon field type $name");
+    }
+
+    /**
+     * Get language
+     *
+     * @param string $languageCode
+     * @return void
+     */
+    protected function getLanguage($languageCode, $name)
+    {
+        $languageHandler = $this->handler->contentLanguageHandler();
+
+        try {
+            return $languageHandler->loadByLanguageCode( $languageCode );
+        }
+        catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
+        {
+            // Just continue creating the type
+        }
+
+        return $languageHandler->create(
+            new Persistence\Content\Language\CreateStruct( array(
+                'languageCode' => $languageCode,
+                'name' => $name,
+                'isEnabled' => true,
+            ) )
+        );
+    }
+
     protected function getContentTypeGroup()
     {
         $contentTypeHandler = $this->handler->contentTypeHandler();
@@ -96,7 +141,7 @@ class CreateActorVisitor
         return $contentTypeHandler->createGroup(
             new Persistence\Content\Type\Group\CreateStruct( array(
                 'name' => array(
-                    'eng-US' => 'Profiler Group'
+                    $language->languageCode => 'Profiler Group'
                 ),
                 'identifier' => $identifier,
                 'modified' => time(),
@@ -107,7 +152,7 @@ class CreateActorVisitor
         );
     }
 
-    protected function getContentType( $type )
+    protected function getContentType( $type, $language )
     {
         $contentTypeHandler = $this->handler->contentTypeHandler();
         $identifier = 'profiler-' . $type->name;
@@ -152,7 +197,7 @@ class CreateActorVisitor
         return $contentTypeHandler->create(
             new Persistence\Content\Type\CreateStruct( array(
                 'name' => array(
-                    'eng-US' => $type->name,
+                    $language->languageCode => $type->name,
                 ),
                 'status' => Persistence\Content\Type::STATUS_DEFINED,
                 'identifier' => $identifier,
@@ -163,7 +208,7 @@ class CreateActorVisitor
                 'remoteId' => md5( microtime() ),
                 'isContainer' => true,
                 'fieldDefinitions' => $fields,
-                'initialLanguageId' => 2,
+                'initialLanguageId' => $language->id,
                 'groupIds' => array( $group->id ),
             ) )
         );

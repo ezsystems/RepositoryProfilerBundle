@@ -9,13 +9,13 @@ use eZ\Publish\Profiler\Logger;
 use eZ\Publish\Profiler\Aborter;
 
 use eZ\Publish\SPI\Persistence;
-use eZ\Publish\API\Repository\FieldTypeService;
+use eZ\Publish\Core\Base\Container\ApiLoader\FieldTypeCollectionFactory;
 
 class SPI extends Executor
 {
-    public function __construct( Persistence\Handler $handler, FieldTypeService $fieldTypeService, Logger $logger )
+    public function __construct( Persistence\Handler $handler, FieldTypeCollectionFactory $fieldTypeCollection, Logger $logger )
     {
-        $this->createActorVisitor = new SPI\CreateActorVisitor( $handler, $fieldTypeService );
+        $this->createActorVisitor = new SPI\CreateActorVisitor( $handler, $fieldTypeCollection );
         $this->subtreeActorVisitor = new SPI\SubtreeActorVisitor( $handler );
         $this->logger = $logger;
     }

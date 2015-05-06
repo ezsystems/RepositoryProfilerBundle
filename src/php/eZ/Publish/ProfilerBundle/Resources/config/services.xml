@@ -4,11 +4,19 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-<!--
-    <parameters>
-    </parameters>
-
     <services>
+        <service id="ezpublish.profiler.executor.spi" class="eZ\Publish\Profiler\Executor\SPI">
+            <argument type="service" id="ezpublish.api.persistence_handler" />
+            <argument type="service" id="ezpublish.field_type_collection.factory" />
+            <argument type="service" id="ezpublish.profiler.logger" />
+        </service>
+
+        <service id="ezpublish.profiler.executor.papi" class="eZ\Publish\Profiler\Executor\PAPI">
+            <argument type="service" id="ezpublish.api.repository" />
+            <argument type="service" id="ezpublish.profiler.logger" />
+        </service>
+
+        <service id="ezpublish.profiler.logger" class="eZ\Publish\Profiler\Logger\Statistics">
+        </service>
     </services>
--->
 </container>
