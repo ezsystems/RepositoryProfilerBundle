@@ -32,6 +32,21 @@ class ProfileCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->writeln("Run");
+        $dialog = $this->getHelper('dialog');
+        if (!$input->getOption('yes') &&
+            !$dialog->askConfirmation($output, "<question>Really run the profiler? This will reset the database.</question>", false)) {
+            return 1;
+        }
+
+        if (!file_exists($profile = $input->getArgument('profile'))) {
+            $output->writeln("<error>File $profile does not exist.</error>");
+            return 1;
+        }
+
+        $output->writeln("Run $profile");
+
+        $container = $this->getContainer();
+        include $profile;
+        $output->writeln($logger->showSummary());
     }
 }
