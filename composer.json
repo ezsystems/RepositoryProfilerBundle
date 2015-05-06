@@ -2,7 +2,7 @@
     "name": "ezsystems/profiler-bundle",
     "type": "symfony-bundle",
     "require": {
-        "ezsystems/ezpublish-kernel": "~5.0",
+        "ezsystems/ezpublish-kernel": "dev-master",
         "fzaninotto/faker": "~1.4",
         "jdorn/sql-formatter": "~1.2"
     },
