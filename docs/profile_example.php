@@ -59,5 +59,5 @@ $executor->run(
         new Constraint\Ratio( $createTask, 1/5 ),
         new Constraint\Ratio( $viewTask, 1 ),
     ),
-    new Aborter\Count(10)
+    new Aborter\Count(50)
 );
