@@ -55,9 +55,11 @@ class ProfileCommand extends ContainerAwareCommand
             $this->resetDatabase( $output );
         }
 
-        $output->writeln("Run $profile");
+        $output->writeln("<info>Run $profile</info>");
         $container = $this->getContainer();
         include $profile;
+
+        $output->writeln("<info>Statistics</info>");
         $output->writeln($this->getContainer()->get('ezpublish.profiler.logger')->showSummary());
     }
 
@@ -73,11 +75,11 @@ class ProfileCommand extends ContainerAwareCommand
         $name = isset($parameters['path']) ? $parameters['path'] : (isset($parameters['dbname']) ? $parameters['dbname'] : false);
         unset($parameters['dbname']);
 
-        $output->writeln("Reset database $name");
+        $output->writeln("<info>Reset database $name</info>");
         $tempConnection = \Doctrine\DBAL\DriverManager::getConnection($parameters);
         $tempConnection->getSchemaManager()->dropAndCreateDatabase($name);
 
-        $output->writeln("Install schema");
+        $output->writeln("<info>Install schema</info>");
         $installer = new Installer\CleanInstaller($connection);
         $installer->setOutput( $output );
         $installer->importSchema();
