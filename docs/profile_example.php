@@ -2,12 +2,6 @@
 
 namespace eZ\Publish\Profiler;
 
-// Makes the following variables available:
-// - $repository (Access to Public API)
-// - $persistenceHandler (Access to SPI (Persistence Handler))
-// - $dbHandler (Direct access to the currently used database handler)
-require __DIR__ . '/bootstrap.php';
-
 $folderType = new ContentType(
     'folder',
     array(
@@ -59,43 +53,11 @@ $viewTask = new Task(
     )
 );
 
-/* Not implemented yet:
-$searchTask = new Task(
-    new Actor\Search( array(
-        'foo',
-        'bar'
-    ) )
-); // */
-
-$logger = new Logger\Statistics();
-$executor = new Executor\SPI(
-    $persistenceHandler,
-    $repository->getFieldTypeService(),
-    array(
-        new Constraint\Ratio( $createTask, 1 ),
-    ),
-    $logger,
-    new Aborter\ContentObjectAttributeCount(
-        $dbHandler,
-        200
-    )
-);
-$executor->run();
-
-$articles->reset();
-$executor = new Executor\PAPI(
-    $repository,
+// Current executor – provided by the caller
+$executor->run(
     array(
         new Constraint\Ratio( $createTask, 1/5 ),
         new Constraint\Ratio( $viewTask, 1 ),
     ),
-    $logger,
-    new Aborter\ContentObjectAttributeCount(
-        $dbHandler,
-        250
-    )
+    new Aborter\Count(10)
 );
-$executor->run();
-
-$logger->showSummary();
-

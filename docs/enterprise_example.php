@@ -53,20 +53,11 @@ $viewTask = new Task(
     )
 );
 
-$executor = $container->get('ezpublish.profiler.executor.spi');
-$executor->run(
-    array(
-        new Constraint\Ratio( $createTask, 1 ),
-    ),
-    new Aborter\Count(100)
-);
-
-$articles->reset();
-$executor = $container->get('ezpublish.profiler.executor.papi');
+// Current executor – provided by the caller
 $executor->run(
     array(
         new Constraint\Ratio( $createTask, 1/5 ),
         new Constraint\Ratio( $viewTask, 1 ),
     ),
-    new Aborter\Count(100)
+    new Aborter\Count(1000)
 );

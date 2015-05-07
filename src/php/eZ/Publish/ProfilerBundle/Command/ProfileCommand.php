@@ -20,6 +20,11 @@ class ProfileCommand extends ContainerAwareCommand
             ->setName('profiler:run')
             ->setDescription('Run profiling')
             ->addArgument(
+                'target',
+                InputArgument::REQUIRED,
+                'Target to run against: spi or papi'
+            )
+            ->addArgument(
                 'profile',
                 InputArgument::REQUIRED,
                 'Profile to run'
@@ -40,6 +45,8 @@ class ProfileCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $executor = $this->getContainer()->get('ezpublish.profiler.executor.' . $input->getArgument('target'));
+
         $dialog = $this->getHelper('dialog');
         if (!$input->getOption('yes') &&
             !$dialog->askConfirmation($output, "<question>Really run the profiler? This will reset the database.</question>", false)) {
@@ -56,7 +63,6 @@ class ProfileCommand extends ContainerAwareCommand
         }
 
         $output->writeln("<info>Run $profile</info>");
-        $container = $this->getContainer();
         include $profile;
 
         $output->writeln("<info>Statistics</info>");
