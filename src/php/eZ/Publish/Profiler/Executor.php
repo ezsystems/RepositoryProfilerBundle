@@ -2,12 +2,15 @@
 
 namespace eZ\Publish\Profiler;
 
-abstract class Executor
+class Executor
 {
+    protected $actorHandler;
+
     protected $logger;
 
-    public function __construct( Logger $logger = null )
+    public function __construct( Actor\Handler $actorHandler, Logger $logger = null )
     {
+        $this->actorHandler = $actorHandler;
         $this->logger = $logger ?: new Logger\NullLogger();
     }
 
@@ -32,6 +35,17 @@ abstract class Executor
         $this->logger->stopActor( $actor );
     }
 
-    abstract public function visitActor( Actor $task );
-}
+    /**
+     * @param \eZ\Publish\Profiler\Actor $actor
+     * @throws \RuntimeException if no visitor for the visited actor class could be found
+     * @return void
+     */
+    public function visitActor( Actor $actor )
+    {
+        if (!$this->actorHandler->canHandle($actor)) {
+            throw new \RuntimeException("No actor handler found for: " . get_class( $actor ));
+        }
 
+        return $this->actorHandler->handle( $actor );
+    }
+}

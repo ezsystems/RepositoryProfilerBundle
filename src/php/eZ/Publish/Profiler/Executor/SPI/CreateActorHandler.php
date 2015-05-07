@@ -5,11 +5,12 @@ namespace eZ\Publish\Profiler\Executor\SPI;
 use eZ\Publish\Profiler\Executor;
 use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
+use eZ\Publish\Profiler\Actor\Handler;
 
 use eZ\Publish\SPI\Persistence;
 use eZ\Publish\Core\Base\Container\ApiLoader\FieldTypeCollectionFactory;
 
-class CreateActorVisitor
+class CreateActorHandler extends Handler
 {
     protected $handler;
 
@@ -21,7 +22,24 @@ class CreateActorVisitor
         $this->fieldTypeCollection = $fieldTypeCollection;
     }
 
-    public function visit( Actor\Create $actor )
+    /**
+     * Can handle
+     *
+     * @param Actor $actor
+     * @return bool
+     */
+    public function canHandle(Actor $actor)
+    {
+        return $actor instanceof Actor\Create;
+    }
+
+    /**
+     * Handle
+     *
+     * @param Actor $actor
+     * @return void
+     */
+    public function handle(Actor $actor)
     {
         $language = $this->getLanguage( 'eng-US', 'English (US)' );
         $type = $this->getContentType( $actor->type, $language );
@@ -126,7 +144,7 @@ class CreateActorVisitor
         );
     }
 
-    protected function getContentTypeGroup()
+    protected function getContentTypeGroup($language)
     {
         $contentTypeHandler = $this->handler->contentTypeHandler();
         $identifier = 'profiler-content-type-group';
@@ -166,7 +184,7 @@ class CreateActorVisitor
 
         $fields = array();
         $position = 1;
-        $group = $this->getContentTypeGroup();
+        $group = $this->getContentTypeGroup($language);
         foreach ( $type->fields as $name => $field )
         {
             switch ( true )

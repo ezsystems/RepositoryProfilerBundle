@@ -23,49 +23,18 @@ class PAPI extends Executor
      */
     private $repository;
 
-    /**
-     * @param \eZ\Publish\API\Repository\Repository $repository
-     * @param array $constraints
-     * @param \eZ\Publish\Profiler\Aborter $aborter
-     */
-    public function __construct( Repository $repository, Logger $logger )
+    public function __construct( Repository $repository, Actor\Handler $actorHandler, Logger $logger )
     {
-        $this->logger = $logger;
-        $this->repository = $repository;
+        parent::__construct( $actorHandler, $logger );
 
+        $this->repository = $repository;
+    }
+
+    public function run( array $constraints, Aborter $aborter )
+    {
         $adminUser = $this->repository->getUserService()->loadUser(14);
         $this->repository->setCurrentUser($adminUser);
 
-        $this->createActorVisitor = new CreateActorVisitor(
-            $this->repository->getContentLanguageService(),
-            $this->repository->getContentTypeService(),
-            $this->repository->getContentService()
-        );
-
-        $this->subtreeViewActorVisitor = new SubtreeActorVisitor(
-            $this->repository->getContentService(),
-            $this->repository->getLocationService(),
-            $this->repository->getSearchService()
-        );
-    }
-
-    /**
-     * @param \eZ\Publish\Profiler\Actor $actor
-     * @throws \RuntimeException if no visitor for the visited actor class could be found
-     * @return void
-     */
-    public function visitActor( Actor $actor )
-    {
-        switch( true ) {
-            case $actor instanceof \eZ\Publish\Profiler\Actor\Create:
-                $this->createActorVisitor->visit( $actor );
-            break;
-            case $actor instanceof \eZ\Publish\Profiler\Actor\SubtreeView:
-                $this->subtreeViewActorVisitor->visit( $actor );
-                break;
-
-            default:
-                throw new \RuntimeException("No visitor for: " . get_class( $actor ));
-        }
+        parent::run($constraints, $aborter);
     }
 }

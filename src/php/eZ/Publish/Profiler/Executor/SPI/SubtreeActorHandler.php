@@ -5,20 +5,42 @@ namespace eZ\Publish\Profiler\Executor\SPI;
 use eZ\Publish\Profiler\Executor;
 use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
+use eZ\Publish\Profiler\Actor\Handler;
 
 use eZ\Publish\SPI\Persistence;
+use eZ\Publish\SPI\Search;
 use eZ\Publish\API\Repository\Values\Content\Query;
 
-class SubtreeActorVisitor
+class SubtreeActorHandler extends Handler
 {
     protected $handler;
 
-    public function __construct( Persistence\Handler $handler )
+    protected $searchHandler;
+
+    public function __construct( Persistence\Handler $handler, Search\Content\Handler $searchHandler )
     {
         $this->handler = $handler;
+        $this->searchHandler = $searchHandler;
     }
 
-    public function visit( Actor\SubtreeView $actor )
+    /**
+     * Can handle
+     *
+     * @param Actor $actor
+     * @return bool
+     */
+    public function canHandle(Actor $actor)
+    {
+        return $actor instanceof Actor\SubtreeView;
+    }
+
+    /**
+     * Handle
+     *
+     * @param Actor $actor
+     * @return void
+     */
+    public function handle(Actor $actor)
     {
         if ( !$object = $actor->storage->get() )
         {
@@ -34,8 +56,7 @@ class SubtreeActorVisitor
         $location = $locationHandler->load( $object->versionInfo->contentInfo->mainLocationId );
 
         // Select all content below content
-        $searchHandler = $this->handler->searchHandler();
-        $result = $searchHandler->findContent(
+        $result = $this->searchHandler->findContent(
             new Query( array(
                 'criterion' => new Query\Criterion\Subtree( $location->pathString )
             ) )

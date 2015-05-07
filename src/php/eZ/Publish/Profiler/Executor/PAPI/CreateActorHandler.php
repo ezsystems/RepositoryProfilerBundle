@@ -1,4 +1,5 @@
 <?php
+
 namespace eZ\Publish\Profiler\Executor\PAPI;
 
 use eZ\Publish\API\Repository\LanguageService;
@@ -8,8 +9,9 @@ use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\Profiler\ContentType;
 use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
+use eZ\Publish\Profiler\Actor\Handler;
 
-class CreateActorVisitor
+class CreateActorHandler extends Handler
 {
     /**
      * @var \eZ\Publish\Core\Repository\LanguageService
@@ -43,6 +45,66 @@ class CreateActorVisitor
 
         $this->contentTypeGroup = null;
         $this->types = array();
+    }
+
+    /**
+     * Can handle
+     *
+     * @param Actor $actor
+     * @return bool
+     */
+    public function canHandle(Actor $actor)
+    {
+        return $actor instanceof Actor\Create;
+    }
+
+    /**
+     * Handle
+     *
+     * @param Actor $actor
+     * @return void
+     */
+    public function handle(Actor $actor)
+    {
+        $language = $this->getLanguage('eng-US', 'English (US)');
+        $type = $this->getContentType($actor->type, $language);
+
+        $contentCreate = $this->contentService->newContentCreateStruct(
+            $type,
+            $language->languageCode
+        );
+
+        $contentCreate->sectionId = 1;
+        $contentCreate->ownerId = 14;
+        $contentCreate->remoteId = sha1(microtime());
+        $contentCreate->alwaysAvailable = true;
+
+        foreach( $actor->type->fields as $identifier => $field ) {
+            /** @var Field $field */
+            $data = $field->dataProvider->get();
+            $contentCreate->setField( $identifier, $data );
+        }
+
+        $location = new \eZ\Publish\API\Repository\Values\Content\LocationCreateStruct(
+            array(
+                "remoteId" => sha1(microtime()),
+                "parentLocationId" => $actor->parentLocationId
+            )
+        );
+
+        $contentDraft = $this->contentService->createContent( $contentCreate, array( $location ) );
+
+        $content = $this->contentService->publishVersion(
+            $contentDraft->versionInfo
+        );
+
+        // Remember created content objects
+        $actor->storage->store( $content );
+
+        if ( $actor->subActor !== null )
+        {
+            $actor->subActor->parentLocationId = $content->versionInfo->contentInfo->mainLocationId;
+        }
     }
 
     /**
@@ -201,48 +263,5 @@ class CreateActorVisitor
         $fieldDefinitionCreate->isSearchable = !in_array($ezType, $notSearchable);
 
         return $fieldDefinitionCreate;
-    }
-
-    public function visit(Actor\Create $actor)
-    {
-        $language = $this->getLanguage('eng-US', 'English (US)');
-        $type = $this->getContentType($actor->type, $language);
-
-        $contentCreate = $this->contentService->newContentCreateStruct(
-            $type,
-            $language->languageCode
-        );
-
-        $contentCreate->sectionId = 1;
-        $contentCreate->ownerId = 14;
-        $contentCreate->remoteId = sha1(microtime());
-        $contentCreate->alwaysAvailable = true;
-
-        foreach( $actor->type->fields as $identifier => $field ) {
-            /** @var Field $field */
-            $data = $field->dataProvider->get();
-            $contentCreate->setField( $identifier, $data );
-        }
-
-        $location = new \eZ\Publish\API\Repository\Values\Content\LocationCreateStruct(
-            array(
-                "remoteId" => sha1(microtime()),
-                "parentLocationId" => $actor->parentLocationId
-            )
-        );
-
-        $contentDraft = $this->contentService->createContent( $contentCreate, array( $location ) );
-
-        $content = $this->contentService->publishVersion(
-            $contentDraft->versionInfo
-        );
-
-        // Remember created content objects
-        $actor->storage->store( $content );
-
-        if ( $actor->subActor !== null )
-        {
-            $actor->subActor->parentLocationId = $content->versionInfo->contentInfo->mainLocationId;
-        }
     }
 }

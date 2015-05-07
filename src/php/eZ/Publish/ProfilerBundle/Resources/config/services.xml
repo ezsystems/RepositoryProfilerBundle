@@ -5,18 +5,60 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="ezpublish.profiler.executor.spi" class="eZ\Publish\Profiler\Executor\SPI">
-            <argument type="service" id="ezpublish.api.persistence_handler" />
-            <argument type="service" id="ezpublish.field_type_collection.factory" />
+        <service id="ezpublish.profiler.executor.spi" class="eZ\Publish\Profiler\Executor">
+            <argument type="service">
+                <service class="eZ\Publish\Profiler\Actor\Handler\Aggregate">
+                    <argument type="collection">
+                        <argument type="service">
+                            <service class="eZ\Publish\Profiler\Executor\SPI\CreateActorHandler">
+                                <argument type="service" id="ezpublish.api.persistence_handler" />
+                                <argument type="service" id="ezpublish.field_type_collection.factory" />
+                            </service>
+                        </argument>
+                        <argument type="service">
+                            <service class="eZ\Publish\Profiler\Executor\SPI\SubtreeActorHandler">
+                                <argument type="service" id="ezpublish.api.persistence_handler" />
+                                <argument type="service" id="ezpublish.spi.search.content_handler" />
+                            </service>
+                        </argument>
+                    </argument>
+                </service>
+            </argument>
             <argument type="service" id="ezpublish.profiler.logger" />
         </service>
 
         <service id="ezpublish.profiler.executor.papi" class="eZ\Publish\Profiler\Executor\PAPI">
             <argument type="service" id="ezpublish.api.repository" />
+            <argument type="service">
+                <service class="eZ\Publish\Profiler\Actor\Handler\Aggregate">
+                    <argument type="collection">
+                        <argument type="service">
+                            <service class="eZ\Publish\Profiler\Executor\PAPI\CreateActorHandler">
+                                <argument type="service" id="ezpublish.api.service.language" />
+                                <argument type="service" id="ezpublish.api.service.content_type" />
+                                <argument type="service" id="ezpublish.api.service.content" />
+                            </service>
+                        </argument>
+                        <argument type="service">
+                            <service class="eZ\Publish\Profiler\Executor\PAPI\SubtreeActorHandler">
+                                <argument type="service" id="ezpublish.api.service.content" />
+                                <argument type="service" id="ezpublish.api.service.location" />
+                                <argument type="service" id="ezpublish.api.service.search" />
+                            </service>
+                        </argument>
+                    </argument>
+                </service>
+            </argument>
             <argument type="service" id="ezpublish.profiler.logger" />
         </service>
 
         <service id="ezpublish.profiler.logger" class="eZ\Publish\Profiler\Logger\Statistics">
+        </service>
+
+        <service id="ezpublish.api.service.language"
+            factory-service="ezpublish.api.repository"
+            factory-method="getContentLanguageService"
+            class="eZ\Publish\API\Repository\LanguageService">
         </service>
     </services>
 </container>

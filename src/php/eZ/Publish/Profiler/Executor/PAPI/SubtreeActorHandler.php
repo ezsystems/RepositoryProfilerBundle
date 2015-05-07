@@ -8,8 +8,9 @@ use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 
 use eZ\Publish\Profiler\Actor;
+use eZ\Publish\Profiler\Actor\Handler;
 
-class SubtreeActorVisitor
+class SubtreeActorHandler extends Handler
 {
     /**
      * @var \eZ\Publish\Core\Repository\ContentService
@@ -38,9 +39,23 @@ class SubtreeActorVisitor
     }
 
     /**
-     * @param \eZ\Publish\Profiler\Actor\SubtreeView $actor
+     * Can handle
+     *
+     * @param Actor $actor
+     * @return bool
      */
-    public function visit( Actor\SubtreeView $actor )
+    public function canHandle(Actor $actor)
+    {
+        return $actor instanceof Actor\SubtreeView;
+    }
+
+    /**
+     * Handle
+     *
+     * @param Actor $actor
+     * @return void
+     */
+    public function handle(Actor $actor)
     {
 
         /** @var \eZ\Publish\Core\Repository\Values\Content\Content $content */
