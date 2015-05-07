@@ -58,7 +58,7 @@ class ProfileCommand extends ContainerAwareCommand
         $output->writeln("Run $profile");
         $container = $this->getContainer();
         include $profile;
-        $output->writeln($logger->showSummary());
+        $output->writeln($this->getContainer()->get('ezpublish.profiler.logger')->showSummary());
     }
 
     /**
