@@ -55,6 +55,7 @@
         <service id="ezpublish.profiler.logger" class="eZ\Publish\Profiler\Logger\Statistics">
         </service>
 
+        <!-- Should not be required, but is currently not exposed -->
         <service id="ezpublish.api.service.language"
             factory-service="ezpublish.api.repository"
             factory-method="getContentLanguageService"
