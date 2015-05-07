@@ -2,6 +2,8 @@
 
 namespace eZ\Publish\Profiler;
 
+use eZ\Publish\API\Repository\Values\Content\Query;
+
 $folderType = new ContentType(
     'folder',
     array(
@@ -53,11 +55,50 @@ $viewTask = new Task(
     )
 );
 
+$simpleSearchTask = new Task(
+    new Actor\Search(
+        new Query( array(
+            'query' => new Query\Criterion\Field(
+                'title',
+                Query\Criterion\Operator::EQ,
+                'test'
+            ),
+        ) )
+    )
+);
+
+$sortedSearchTask = new Task(
+    new Actor\Search(
+        new Query( array(
+            'query' => new Query\Criterion\ContentTypeId(
+                Query\Criterion\Operator::GT,
+                0
+            ),
+            'sortClauses' => array( new Query\SortClause\Field(
+                'profiler-article',
+                'title',
+                Query::SORT_ASC,
+                'eng-US'
+            ) ),
+        ) )
+    )
+);
+
 // Current executor – provided by the caller
+/*
 $executor->run(
     array(
-        new Constraint\Ratio( $createTask, 1/5 ),
-        new Constraint\Ratio( $viewTask, 1 ),
+        new Constraint\Ratio( $createTask, 1 ),
     ),
     new Aborter\Count(50)
+); // */
+
+$executor->run(
+    array(
+        new Constraint\Ratio( $createTask, 1/10 ),
+        new Constraint\Ratio( $viewTask, 1 ),
+        new Constraint\Ratio( $simpleSearchTask, 1/3 ),
+        new Constraint\Ratio( $sortedSearchTask, 1/5 ),
+    ),
+    new Aborter\Count(200)
 );
