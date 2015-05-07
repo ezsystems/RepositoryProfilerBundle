@@ -10,6 +10,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
+use EzSystems\PlatformInstallerBundle\Installer;
+
 class ProfileCommand extends ContainerAwareCommand
 {
     protected function configure()
@@ -27,6 +29,12 @@ class ProfileCommand extends ContainerAwareCommand
                 null,
                 InputOption::VALUE_NONE,
                 'Force run, which will reset the current database.'
+            )
+            ->addOption(
+                'no-reset',
+                null,
+                InputOption::VALUE_NONE,
+                'Skip resetting the database – based on the existing content this might cause an undefined state'
             );
     }
 
@@ -43,10 +51,38 @@ class ProfileCommand extends ContainerAwareCommand
             return 1;
         }
 
-        $output->writeln("Run $profile");
+        if (!$input->getOption('no-reset')) {
+            $this->resetDatabase( $output );
+        }
 
+        $output->writeln("Run $profile");
         $container = $this->getContainer();
         include $profile;
         $output->writeln($logger->showSummary());
+    }
+
+    /**
+     * Reset database
+     *
+     * @return void
+     */
+    protected function resetDatabase(OutputInterface $output)
+    {
+        $connection = $this->getContainer()->get('doctrine.dbal.default_connection');
+        $parameters = $connection->getParams();
+        $name = isset($parameters['path']) ? $parameters['path'] : (isset($parameters['dbname']) ? $parameters['dbname'] : false);
+        unset($parameters['dbname']);
+
+        $output->writeln("Reset database $name");
+        $tempConnection = \Doctrine\DBAL\DriverManager::getConnection($parameters);
+        $tempConnection->getSchemaManager()->dropAndCreateDatabase($name);
+
+        $output->writeln("Install schema");
+        $installer = new Installer\CleanInstaller($connection);
+        $installer->setOutput( $output );
+        $installer->importSchema();
+        $installer->importData();
+
+        return null;
     }
 }
