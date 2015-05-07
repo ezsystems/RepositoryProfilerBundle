@@ -1,6 +1,7 @@
 <?php
 namespace eZ\Publish\Profiler\Executor\PAPI;
 
+use eZ\Publish\API\Repository\LanguageService;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\ContentService;
 
@@ -10,6 +11,11 @@ use eZ\Publish\Profiler\Actor;
 
 class CreateActorVisitor
 {
+    /**
+     * @var \eZ\Publish\Core\Repository\LanguageService
+     */
+    private $languageService;
+
     /**
      * @var \eZ\Publish\Core\Repository\ContentTypeService
      */
@@ -29,13 +35,35 @@ class CreateActorVisitor
      * @param \eZ\Publish\Core\Repository\ContentTypeService $contentTypeService
      * @param \eZ\Publish\Core\Repository\ContentService $contentService
      */
-    public function __construct(ContentTypeService $contentTypeService, ContentService $contentService)
+    public function __construct(LanguageService $languageService, ContentTypeService $contentTypeService, ContentService $contentService)
     {
+        $this->languageService = $languageService;
         $this->contentTypeService = $contentTypeService;
         $this->contentService = $contentService;
 
         $this->contentTypeGroup = null;
         $this->types = array();
+    }
+
+    /**
+     * Get language
+     *
+     * @param string $languageCode
+     * @return Language
+     */
+    private function getLanguage($languageCode, $name)
+    {
+        try {
+            return $this->languageService->loadLanguage($languageCode);
+        } catch (\eZ\Publish\API\Repository\Exceptions\NotFoundException $e) {
+            // Just create language…
+        }
+
+        $createStruct = $this->languageService->newLanguageCreateStruct();
+        $createStruct->languageCode = $languageCode;
+        $createStruct->name = $name;
+
+        return $this->languageService->createLanguage($createStruct);
     }
 
     /**
@@ -47,7 +75,7 @@ class CreateActorVisitor
     {
         $identifier = 'profiler-content-type-group';
         try {
-            return $this->contentTypeHandler->loadContentTypeGroupByIdentifier( $identifier );
+            return $this->contentTypeService->loadContentTypeGroupByIdentifier( $identifier );
         }
         catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
         {
@@ -71,7 +99,7 @@ class CreateActorVisitor
      * @throws \RuntimeException
      * @return \eZ\Publish\Core\Repository\Values\ContentType\ContentType
      */
-    private function getContentType( ContentType $type )
+    private function getContentType( ContentType $type, $language )
     {
         $identifier = 'profiler-' . $type->name;
         try {
@@ -79,15 +107,14 @@ class CreateActorVisitor
         }
         catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
         {
-            echo $e;
             // Just continue creating the type
         }
 
         $contentTypeCreate = $this->contentTypeService->newContentTypeCreateStruct( $identifier );
 
-        $contentTypeCreate->mainLanguageCode = 'eng-US';
+        $contentTypeCreate->mainLanguageCode = $language->languageCode;
         $contentTypeCreate->names = array(
-            'eng-US' => $type->name
+            $language->languageCode => $type->name
         );
         $contentTypeCreate->creationDate = new \DateTime();
         $contentTypeCreate->remoteId = sha1(microtime());
@@ -103,24 +130,24 @@ class CreateActorVisitor
             {
                 case $field instanceof Field\TextLine:
                     $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'ezstring', $fieldPosition )
+                        $this->createFieldDefinition( $name, 'ezstring', $language, $fieldPosition )
                     );
                     break;
                 case $field instanceof Field\XmlText:
                     $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'ezxmltext', $fieldPosition )
+                        $this->createFieldDefinition( $name, 'ezxmltext', $language, $fieldPosition )
                     );
                     break;
 
                 case $field instanceof Field\Author:
                     $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'ezauthor', $fieldPosition, false )
+                        $this->createFieldDefinition( $name, 'ezauthor', $language, $fieldPosition, false )
                     );
                     break;
 
                 case $field instanceof Field\TextBlock:
                     $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'eztext', $fieldPosition )
+                        $this->createFieldDefinition( $name, 'eztext', $language, $fieldPosition )
                     );
                     break;
                 default:
@@ -131,12 +158,17 @@ class CreateActorVisitor
             $fieldPosition += 1;
         }
 
-        $contentTypeDraft = $this->contentTypeService->createContentType(
-            $contentTypeCreate,
-            array(
-                $this->getContentTypeGroup()
-            )
-        );
+        try {
+            $contentTypeDraft = $this->contentTypeService->createContentType(
+                $contentTypeCreate,
+                array(
+                    $this->getContentTypeGroup()
+                )
+            );
+        } catch (\eZ\Publish\Core\Base\Exceptions\ContentTypeFieldDefinitionValidationException $e) {
+            var_dump($e->getFieldErrors());
+            throw $e;
+        }
 
         $this->contentTypeService->publishContentTypeDraft($contentTypeDraft);
         return $this->contentTypeService->loadContentType($contentTypeDraft->id);
@@ -149,15 +181,16 @@ class CreateActorVisitor
      * @param bool $translatable
      * @return \eZ\Publish\API\Repository\Values\ContentType\FieldDefinitionCreateStruct
      */
-    private function createFieldDefinition($name, $ezType, $position, $translatable = true)
+    private function createFieldDefinition($name, $ezType, $language, $position, $translatable = true)
     {
+        $notSearchable = array('eztext');
         $fieldDefinitionCreate = $this->contentTypeService->newFieldDefinitionCreateStruct(
             $name,
             $ezType
         );
 
         $fieldDefinitionCreate->names = array(
-            'eng-US' => $name
+            $language->languageCode => $name
         );
         $fieldDefinitionCreate->isTranslatable = true;
         $fieldDefinitionCreate->fieldGroup = "main";
@@ -165,18 +198,19 @@ class CreateActorVisitor
         $fieldDefinitionCreate->isTranslatable = $translatable;
         $fieldDefinitionCreate->isRequired = false;
         $fieldDefinitionCreate->isInfoCollector = false;
-        $fieldDefinitionCreate->isSearchable = true;
+        $fieldDefinitionCreate->isSearchable = !in_array($ezType, $notSearchable);
 
         return $fieldDefinitionCreate;
     }
 
     public function visit(Actor\Create $actor)
     {
-        $type = $this->getContentType($actor->type);
+        $language = $this->getLanguage('eng-US', 'English (US)');
+        $type = $this->getContentType($actor->type, $language);
 
         $contentCreate = $this->contentService->newContentCreateStruct(
             $type,
-            'eng-US'
+            $language->languageCode
         );
 
         $contentCreate->sectionId = 1;

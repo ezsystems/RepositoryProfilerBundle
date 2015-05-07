@@ -33,7 +33,11 @@ class PAPI extends Executor
         $this->logger = $logger;
         $this->repository = $repository;
 
+        $adminUser = $this->repository->getUserService()->loadUser(14);
+        $this->repository->setCurrentUser($adminUser);
+
         $this->createActorVisitor = new CreateActorVisitor(
+            $this->repository->getContentLanguageService(),
             $this->repository->getContentTypeService(),
             $this->repository->getContentService()
         );
