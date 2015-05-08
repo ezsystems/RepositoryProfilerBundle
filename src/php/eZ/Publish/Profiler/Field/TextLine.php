@@ -11,5 +11,15 @@ class TextLine extends Field
     {
         parent::__construct( $dataProvider ?: new DataProvider\String() );
     }
+
+    /**
+     * Get type identifier
+     *
+     * @return string
+     */
+    public function getTypeIdentifier()
+    {
+        return 'ezstring';
+    }
 }
 

@@ -70,10 +70,10 @@ class CreateActorHandler extends Handler
         foreach ($actor->type->languageCodes as $languageCode) {
             $languages[$languageCode] = $this->getLanguage($languageCode, "Test ($languageCode)");
         }
-        $mainLanguage = reset($languages);
 
         $type = $this->getContentType($actor->type, $languages);
 
+        $mainLanguage = reset($languages);
         $contentCreate = $this->contentService->newContentCreateStruct(
             $type,
             $mainLanguage->languageCode
@@ -85,9 +85,18 @@ class CreateActorHandler extends Handler
         $contentCreate->alwaysAvailable = true;
 
         foreach( $actor->type->fields as $identifier => $field ) {
-            /** @var Field $field */
             $data = $field->dataProvider->get();
             $contentCreate->setField( $identifier, $data );
+
+            if ($field->translatable) {
+                foreach ($languages as $language) {
+                    if ($language == $mainLanguage) {
+                        continue;
+                    }
+
+                    $contentCreate->setField( $identifier, $data, $language->languageCode );
+                }
+            }
         }
 
         $location = new \eZ\Publish\API\Repository\Values\Content\LocationCreateStruct(
@@ -192,35 +201,9 @@ class CreateActorHandler extends Handler
         $fieldPosition = 1;
         foreach ( $type->fields as $name => $field )
         {
-            switch ( true )
-            {
-                case $field instanceof Field\TextLine:
-                    $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'ezstring', $languages, $fieldPosition )
-                    );
-                    break;
-                case $field instanceof Field\XmlText:
-                    $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'ezxmltext', $languages, $fieldPosition )
-                    );
-                    break;
-
-                case $field instanceof Field\Author:
-                    $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'ezauthor', $languages, $fieldPosition, false )
-                    );
-                    break;
-
-                case $field instanceof Field\TextBlock:
-                    $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'eztext', $languages, $fieldPosition )
-                    );
-                    break;
-                default:
-                    throw new \RuntimeException(
-                        "No field handler available for: " . get_class( $field )
-                    );
-            }
+            $contentTypeCreate->addFieldDefinition(
+                $this->createFieldDefinition( $name, $field, $languages, $fieldPosition )
+            );
             $fieldPosition += 1;
         }
 
@@ -247,22 +230,20 @@ class CreateActorHandler extends Handler
      * @param bool $translatable
      * @return \eZ\Publish\API\Repository\Values\ContentType\FieldDefinitionCreateStruct
      */
-    private function createFieldDefinition($name, $ezType, array $languages, $position, $translatable = true)
+    private function createFieldDefinition($name, Field $field, array $languages, $position)
     {
-        $notSearchable = array('eztext');
         $fieldDefinitionCreate = $this->contentTypeService->newFieldDefinitionCreateStruct(
             $name,
-            $ezType
+            $field->getTypeIdentifier()
         );
 
         $fieldDefinitionCreate->names = array_fill_keys(array_keys($languages), ucfirst($name));
-        $fieldDefinitionCreate->isTranslatable = true;
         $fieldDefinitionCreate->fieldGroup = "main";
         $fieldDefinitionCreate->position = $position;
-        $fieldDefinitionCreate->isTranslatable = $translatable;
+        $fieldDefinitionCreate->isTranslatable = $field->translatable;
         $fieldDefinitionCreate->isRequired = false;
         $fieldDefinitionCreate->isInfoCollector = false;
-        $fieldDefinitionCreate->isSearchable = !in_array($ezType, $notSearchable);
+        $fieldDefinitionCreate->isSearchable = $field->searchable;
 
         return $fieldDefinitionCreate;
     }
