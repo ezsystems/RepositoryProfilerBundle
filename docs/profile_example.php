@@ -57,7 +57,7 @@ $viewTask = new Task(
 
 $simpleSearchTask = new Task(
     new Actor\Search(
-        "Filter Search",
+        "Field Search",
         new Query( array(
             'query' => new Query\Criterion\Field(
                 'title',
@@ -70,12 +70,8 @@ $simpleSearchTask = new Task(
 
 $sortedSearchTask = new Task(
     new Actor\Search(
-        "Filter Sort Search",
+        "Field Sort Search",
         new Query( array(
-            'query' => new Query\Criterion\ContentTypeId(
-                Query\Criterion\Operator::GT,
-                0
-            ),
             'sortClauses' => array( new Query\SortClause\Field(
                 'profiler-article',
                 'title',
