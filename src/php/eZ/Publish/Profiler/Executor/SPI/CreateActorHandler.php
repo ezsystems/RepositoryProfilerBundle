@@ -49,39 +49,7 @@ class CreateActorHandler extends Handler
         $mainLanguage = reset($languages);
         $type = $this->getContentType( $actor->type, $languages );
 
-        $fields = array();
-        foreach ( $type->fieldDefinitions as $fieldDefinition )
-        {
-            $spiFieldType = $this->getFieldType( $fieldDefinition->fieldType );
-            $profilerFieldType = $actor->type->fields[$fieldDefinition->identifier];
-
-            $data = $profilerFieldType->dataProvider->get($mainLanguage->languageCode);
-            $value = $spiFieldType->acceptValue( $data );
-            $fields[] = new Persistence\Content\Field( array(
-                'fieldDefinitionId' => $fieldDefinition->id,
-                'type' => $fieldDefinition->fieldType,
-                'languageCode' => $mainLanguage->languageCode,
-                'value' => $spiFieldType->toPersistenceValue( $value ),
-            ) );
-
-            if ($profilerFieldType->translatable) {
-                foreach ($languages as $language) {
-                    if ($language == $mainLanguage) {
-                        continue;
-                    }
-
-                    $data = $profilerFieldType->dataProvider->get($language->languageCode);
-                    $value = $spiFieldType->acceptValue( $data );
-                    $fields[] = new Persistence\Content\Field( array(
-                        'fieldDefinitionId' => $fieldDefinition->id,
-                        'type' => $fieldDefinition->fieldType,
-                        'languageCode' => $language->languageCode,
-                        'value' => $spiFieldType->toPersistenceValue( $value ),
-                    ) );
-                }
-            }
-        }
-
+        $fields = $this->getFields($actor, $type, $languages);
         $contentHandler = $this->handler->contentHandler();
         $name = md5(microtime());
         $content = $contentHandler->create(
@@ -120,6 +88,51 @@ class CreateActorHandler extends Handler
         {
             $actor->subActor->parentLocationId = $content->versionInfo->contentInfo->mainLocationId;
         }
+    }
+
+    /**
+     * getFields
+     *
+     * @param mixed $param
+     * @return void
+     */
+    protected function getFields($actor, $type, array $languages)
+    {
+        $fields = array();
+        $mainLanguage = reset($languages);
+        foreach ( $type->fieldDefinitions as $fieldDefinition )
+        {
+            $spiFieldType = $this->getFieldType( $fieldDefinition->fieldType );
+            $profilerFieldType = $actor->type->fields[$fieldDefinition->identifier];
+
+            $data = $profilerFieldType->dataProvider->get($mainLanguage->languageCode);
+            $value = $spiFieldType->acceptValue( $data );
+            $fields[] = new Persistence\Content\Field( array(
+                'fieldDefinitionId' => $fieldDefinition->id,
+                'type' => $fieldDefinition->fieldType,
+                'languageCode' => $mainLanguage->languageCode,
+                'value' => $spiFieldType->toPersistenceValue( $value ),
+            ) );
+
+            if ($profilerFieldType->translatable) {
+                foreach ($languages as $language) {
+                    if ($language == $mainLanguage) {
+                        continue;
+                    }
+
+                    $data = $profilerFieldType->dataProvider->get($language->languageCode);
+                    $value = $spiFieldType->acceptValue( $data );
+                    $fields[] = new Persistence\Content\Field( array(
+                        'fieldDefinitionId' => $fieldDefinition->id,
+                        'type' => $fieldDefinition->fieldType,
+                        'languageCode' => $language->languageCode,
+                        'value' => $spiFieldType->toPersistenceValue( $value ),
+                    ) );
+                }
+            }
+        }
+
+        return $fields;
     }
 
     /**
