@@ -13,5 +13,15 @@ class SubtreeView extends Actor
     {
         $this->storage = $storage;
     }
+
+    /**
+     * Get name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return 'View Subtree';
+    }
 }
 

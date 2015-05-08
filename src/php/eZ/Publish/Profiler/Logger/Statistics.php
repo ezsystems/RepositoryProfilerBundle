@@ -37,14 +37,14 @@ class Statistics extends Logger
     public function startActor( Actor $actor )
     {
         $this->currentActor++;
-        $this->actor[$this->currentExecutor][get_class( $actor )][$this->currentActor]['start'] = microtime( true );
+        $this->actor[$this->currentExecutor][$actor->getName()][$this->currentActor]['start'] = microtime( true );
 
         // Just do nothing…
     }
 
     public function stopActor( Actor $actor )
     {
-        $this->actor[$this->currentExecutor][get_class( $actor )][$this->currentActor]['end'] = microtime( true );
+        $this->actor[$this->currentExecutor][$actor->getName()][$this->currentActor]['end'] = microtime( true );
 
         echo "    \r {$this->currentExecutor}: {$this->currentActor}";
     }

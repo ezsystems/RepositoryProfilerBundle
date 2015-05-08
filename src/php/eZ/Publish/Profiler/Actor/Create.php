@@ -33,5 +33,15 @@ class Create extends Actor
 
         return parent::getFlatList();
     }
+
+    /**
+     * Get name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return 'Create Content';
+    }
 }
 

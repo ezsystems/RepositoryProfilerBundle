@@ -57,6 +57,7 @@ $viewTask = new Task(
 
 $simpleSearchTask = new Task(
     new Actor\Search(
+        "Filter Search",
         new Query( array(
             'query' => new Query\Criterion\Field(
                 'title',
@@ -69,6 +70,7 @@ $simpleSearchTask = new Task(
 
 $sortedSearchTask = new Task(
     new Actor\Search(
+        "Filter Sort Search",
         new Query( array(
             'query' => new Query\Criterion\ContentTypeId(
                 Query\Criterion\Operator::GT,

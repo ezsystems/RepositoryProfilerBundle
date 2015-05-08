@@ -26,5 +26,19 @@ abstract class Actor
 
         return $list;
     }
+
+    /**
+     * Get name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        if (isset($this->name)) {
+            return $this->name;
+        }
+
+        return get_class($this);
+    }
 }
 
