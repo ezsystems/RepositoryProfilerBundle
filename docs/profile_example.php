@@ -22,7 +22,7 @@ $articleType = new ContentType(
         'author' => new Field\Author( new DataProvider\User( 'editor' ) ),
         // …
     ),
-    array($defaultLanguage, 'ger-DE', 'fra-FR'),
+    array($defaultLanguage, 'ger-DE', 'fra-FR'), // Languages of content
     8 // Average number of versions
 );
 
@@ -83,7 +83,7 @@ $sortedSearchTask = new Task(
                 'profiler-article',
                 'title',
                 Query::SORT_ASC,
-                'eng-US'
+                $defaultLanguage
             ) ),
         ) )
     )
@@ -98,7 +98,7 @@ $executor->run(
     new Aborter\Count(50)
 ); // */
 
-/*
+//*
 $executor->run(
     array(
         new Constraint\Ratio( $createTask, 1/10 ),
