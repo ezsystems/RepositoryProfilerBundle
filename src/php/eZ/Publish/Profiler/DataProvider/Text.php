@@ -8,7 +8,7 @@ use Faker;
 
 class Text extends DataProvider
 {
-    public function get()
+    public function get($languageCode)
     {
         $faker = Faker\Factory::create();
         return $faker->text( GaussDistributor::getNumber( 2048 ) );

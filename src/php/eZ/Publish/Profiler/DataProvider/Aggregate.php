@@ -21,10 +21,10 @@ class Aggregate extends DataProvider
         $this->dataProviders[] = $dataProvider;
     }
 
-    public function get()
+    public function get($languageCode)
     {
         $key = array_rand( $this->dataProviders );
-        return $this->dataProviders[$key]->get();
+        return $this->dataProviders[$key]->get($languageCode);
     }
 }
 

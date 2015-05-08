@@ -144,8 +144,10 @@ class CreateActorHandler extends Handler
     {
         $mainLanguage = reset($languages);
         foreach( $fields as $identifier => $field ) {
-            $data = $field->dataProvider->get();
-            $contentCreate->setField( $identifier, $data );
+            $contentCreate->setField(
+                $identifier,
+                $field->dataProvider->get( $mainLanguage->languageCode )
+            );
 
             if ($field->translatable) {
                 foreach ($languages as $language) {
@@ -153,7 +155,11 @@ class CreateActorHandler extends Handler
                         continue;
                     }
 
-                    $contentCreate->setField( $identifier, $data, $language->languageCode );
+                    $contentCreate->setField(
+                        $identifier,
+                        $field->dataProvider->get( $language->languageCode ),
+                        $language->languageCode
+                    );
                 }
             }
         }

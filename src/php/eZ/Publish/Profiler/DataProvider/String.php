@@ -7,7 +7,7 @@ use Faker;
 
 class String extends DataProvider
 {
-    public function get()
+    public function get($languageCode)
     {
         $faker = Faker\Factory::create();
         return $faker->catchPhrase;

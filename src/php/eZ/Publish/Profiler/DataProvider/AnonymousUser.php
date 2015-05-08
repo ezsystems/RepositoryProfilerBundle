@@ -6,7 +6,7 @@ use eZ\Publish\Profiler\DataProvider;
 
 class AnonymousUser extends DataProvider
 {
-    public function get()
+    public function get($languageCode)
     {
         return new \eZ\Publish\Core\FieldType\Author\Value(
             array(

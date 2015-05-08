@@ -6,7 +6,7 @@ use eZ\Publish\Profiler\DataProvider;
 
 class XmlText extends DataProvider
 {
-    public function get()
+    public function get($languageCode)
     {
         $doc = new \DOMDocument();
         $doc->loadXml( trim( '
