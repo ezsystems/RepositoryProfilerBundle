@@ -6,6 +6,7 @@ use eZ\Publish\Profiler\Executor;
 use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
 use eZ\Publish\Profiler\Actor\Handler;
+use eZ\Publish\Profiler\GaussDistributor;
 
 use eZ\Publish\SPI\Persistence;
 use eZ\Publish\Core\Base\Container\ApiLoader\FieldTypeCollectionFactory;
@@ -52,26 +53,24 @@ class CreateActorHandler extends Handler
         $fields = $this->getFields($actor, $type, $languages);
         $contentHandler = $this->handler->contentHandler();
         $name = md5(microtime());
-        $content = $contentHandler->create(
-            new Persistence\Content\CreateStruct( array(
-                'name' => array_fill_keys(array_keys($languages), $name),
-                'typeId' => $type->id,
-                'sectionId' => 1,
-                'ownerId' => 14,
-                'locations' => array(
-                    new Persistence\Content\Location\CreateStruct( array(
-                        'remoteId' => 23, // Is currently 'ignored' and broken in the schema
-                        'parentId' => $actor->parentLocationId,
+        $contentCreateSruct = new Persistence\Content\CreateStruct( array(
+            'name' => array_fill_keys(array_keys($languages), $name),
+            'typeId' => $type->id,
+            'sectionId' => 1,
+            'ownerId' => 14,
+            'locations' => array(
+                new Persistence\Content\Location\CreateStruct( array(
+                    'remoteId' => 23, // Is currently 'ignored' and broken in the schema
+                    'parentId' => $actor->parentLocationId,
 
-                    ) ),
-                ),
-                'fields' => $fields,
-                'remoteId' => md5( microtime() ),
-                'initialLanguageId' => $mainLanguage->id,
-                'modified' => time(),
-            ) )
-        );
-
+                ) ),
+            ),
+            'fields' => $fields,
+            'remoteId' => md5( microtime() ),
+            'initialLanguageId' => $mainLanguage->id,
+            'modified' => time(),
+        ) );
+        $content = $contentHandler->create($contentCreateSruct);
         $content = $contentHandler->publish(
             $content->versionInfo->contentInfo->id,
             $content->versionInfo->versionNo,
@@ -80,6 +79,7 @@ class CreateActorHandler extends Handler
                 'name' => $name,
             ) )
         );
+        $content = $this->ageContent($actor, $content);
 
         // Remember created content objects
         $actor->storage->store( $content );
@@ -88,6 +88,39 @@ class CreateActorHandler extends Handler
         {
             $actor->subActor->parentLocationId = $content->versionInfo->contentInfo->mainLocationId;
         }
+    }
+
+    /**
+     * Age content
+     *
+     * @param Content $content
+     * @return void
+     */
+    protected function ageContent($actor, $content)
+    {
+        $contentHandler = $this->handler->contentHandler();
+        $versionCount = GaussDistributor::getNumber($actor->type->versionCount) - 1;
+        $draft = null;
+        for ($i = 0; $i < $versionCount; ++$i) {
+            $draft = $contentHandler->createDraftFromVersion(
+                $content->versionInfo->contentInfo->id,
+                $content->versionInfo->versionNo,
+                $content->versionInfo->creatorId
+            );
+        }
+
+        if ($draft) {
+            $content = $contentHandler->publish(
+                $draft->versionInfo->contentInfo->id,
+                $draft->versionInfo->versionNo,
+                new Persistence\Content\MetadataUpdateStruct( array(
+                    'publicationDate' => time(),
+                    'name' => $content->versionInfo->contentInfo->name,
+                ) )
+            );
+        }
+
+        return $content;
     }
 
     /**
