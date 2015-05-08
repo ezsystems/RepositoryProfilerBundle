@@ -41,30 +41,34 @@ class CreateActorHandler extends Handler
      */
     public function handle(Actor $actor)
     {
-        $language = $this->getLanguage( 'eng-US', 'English (US)' );
-        $type = $this->getContentType( $actor->type, $language );
+        $languages = array();
+        foreach ($actor->type->languageCodes as $languageCode) {
+            $languages[$languageCode] = $this->getLanguage($languageCode, "Test ($languageCode)");
+        }
+
+        $mainLanguage = reset($languages);
+        $type = $this->getContentType( $actor->type, $languages );
 
         $fields = array();
         foreach ( $type->fieldDefinitions as $fieldDefinition )
         {
             $fieldType = $this->getFieldType( $fieldDefinition->fieldType );
 
-            $data = $actor->type->fields[$fieldDefinition->identifier]->dataProvider->get();
+            $data = $actor->type->fields[$fieldDefinition->identifier]->dataProvider->get($mainLanguage->languageCode);
             $value = $fieldType->acceptValue( $data );
             $fields[] = new Persistence\Content\Field( array(
                 'fieldDefinitionId' => $fieldDefinition->id,
                 'type' => $fieldDefinition->fieldType,
-                'languageCode' => $language->languageCode,
+                'languageCode' => $mainLanguage->languageCode,
                 'value' => $fieldType->toPersistenceValue( $value ),
             ) );
         }
 
         $contentHandler = $this->handler->contentHandler();
+        $name = md5(microtime());
         $content = $contentHandler->create(
             new Persistence\Content\CreateStruct( array(
-                'name' => array(
-                    $language->languageCode => $name = md5( microtime() ),
-                ),
+                'name' => array_fill_keys(array_keys($languages), $name),
                 'typeId' => $type->id,
                 'sectionId' => 1,
                 'ownerId' => 14,
@@ -77,7 +81,7 @@ class CreateActorHandler extends Handler
                 ),
                 'fields' => $fields,
                 'remoteId' => md5( microtime() ),
-                'initialLanguageId' => $language->id,
+                'initialLanguageId' => $mainLanguage->id,
                 'modified' => time(),
             ) )
         );
@@ -144,7 +148,7 @@ class CreateActorHandler extends Handler
         );
     }
 
-    protected function getContentTypeGroup($language)
+    protected function getContentTypeGroup(array $languages)
     {
         $contentTypeHandler = $this->handler->contentTypeHandler();
         $identifier = 'profiler-content-type-group';
@@ -158,9 +162,7 @@ class CreateActorHandler extends Handler
 
         return $contentTypeHandler->createGroup(
             new Persistence\Content\Type\Group\CreateStruct( array(
-                'name' => array(
-                    $language->languageCode => 'Profiler Group'
-                ),
+                'name' => array_fill_keys(array_keys($languages), 'Profiler Group'),
                 'identifier' => $identifier,
                 'modified' => time(),
                 'modifierId' => 14,
@@ -170,7 +172,7 @@ class CreateActorHandler extends Handler
         );
     }
 
-    protected function getContentType( $type, $language )
+    protected function getContentType( $type, array $languages )
     {
         $contentTypeHandler = $this->handler->contentTypeHandler();
         $identifier = 'profiler-' . $type->name;
@@ -184,39 +186,16 @@ class CreateActorHandler extends Handler
 
         $fields = array();
         $position = 1;
-        $group = $this->getContentTypeGroup($language);
+        $group = $this->getContentTypeGroup($languages);
         foreach ( $type->fields as $name => $field )
         {
-            switch ( true )
-            {
-                case $field instanceof Field\TextLine:
-                    $fields[] = $this->prepareFieldDefinition( $name, 'ezstring', $position++ );
-                    break;
-
-                case $field instanceof Field\XmlText:
-                    $fields[] = $this->prepareFieldDefinition( $name, 'ezxmltext', $position++ );
-                    break;
-
-                case $field instanceof Field\Author:
-                    $fields[] = $this->prepareFieldDefinition( $name, 'ezauthor', $position++, false );
-                    break;
-
-                case $field instanceof Field\TextBlock:
-                    $fields[] = $this->prepareFieldDefinition( $name, 'eztext', $position++ );
-                    break;
-
-                default:
-                    throw new \RuntimeException(
-                        "No field handler available for: " . get_class( $field )
-                    );
-            }
+            $fields[] = $this->prepareFieldDefinition( $name, $field, $languages, $position++ );
         }
 
+        $mainLanguage = reset($languages);
         return $contentTypeHandler->create(
             new Persistence\Content\Type\CreateStruct( array(
-                'name' => array(
-                    $language->languageCode => $type->name,
-                ),
+                'name' => array_fill_keys(array_keys($languages), $type->name),
                 'status' => Persistence\Content\Type::STATUS_DEFINED,
                 'identifier' => $identifier,
                 'modified' => time(),
@@ -226,21 +205,20 @@ class CreateActorHandler extends Handler
                 'remoteId' => md5( microtime() ),
                 'isContainer' => true,
                 'fieldDefinitions' => $fields,
-                'initialLanguageId' => $language->id,
+                'initialLanguageId' => $mainLanguage->id,
                 'groupIds' => array( $group->id ),
             ) )
         );
     }
 
-    protected function prepareFieldDefinition( $name, $type, $position, $translatable = true )
+    protected function prepareFieldDefinition( $name, Field $field, array $languages, $position )
     {
         return new Persistence\Content\Type\FieldDefinition( array(
-            'name' => array(
-                'eng' => $name,
-            ),
+            'name' => array_fill_keys(array_keys($languages), $name),
             'identifier' => $name,
-            'fieldType' => $type,
-            'isTranslatable' => $translatable,
+            'fieldType' => $field->getTypeIdentifier(),
+            'isTranslatable' => $field->translatable,
+            'isSearchable' => $field->searchable,
             'fieldGroup' => 'main',
             'position' => $position,
         ) );
