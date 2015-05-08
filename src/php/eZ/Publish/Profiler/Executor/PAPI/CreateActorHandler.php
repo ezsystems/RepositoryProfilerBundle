@@ -10,6 +10,7 @@ use eZ\Publish\Profiler\ContentType;
 use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
 use eZ\Publish\Profiler\Actor\Handler;
+use eZ\Publish\Profiler\GaussDistributor;
 
 class CreateActorHandler extends Handler
 {
@@ -84,7 +85,65 @@ class CreateActorHandler extends Handler
         $contentCreate->remoteId = sha1(microtime());
         $contentCreate->alwaysAvailable = true;
 
-        foreach( $actor->type->fields as $identifier => $field ) {
+        $contentCreate = $this->createFields($contentCreate, $actor->type->fields, $languages);
+
+        $location = new \eZ\Publish\API\Repository\Values\Content\LocationCreateStruct(
+            array(
+                "remoteId" => sha1(microtime()),
+                "parentLocationId" => $actor->parentLocationId
+            )
+        );
+
+        $contentDraft = $this->contentService->createContent( $contentCreate, array( $location ) );
+        $content = $this->contentService->publishVersion( $contentDraft->versionInfo );
+        $content = $this->ageContent($actor->type, $content);
+
+        // Remember created content objects
+        $actor->storage->store( $content );
+
+        if ( $actor->subActor !== null )
+        {
+            $actor->subActor->parentLocationId = $content->versionInfo->contentInfo->mainLocationId;
+        }
+    }
+
+    /**
+     * Age content
+     *
+     * @param ContentType $type
+     * @param Content $content
+     * @return Content
+     */
+    protected function ageContent(ContentType $type, $content)
+    {
+        $versionCount = GaussDistributor::getNumber($type->versionCount) - 1;
+        if (!$versionCount) {
+            return $content;
+        }
+
+        $draft = null;
+        for ($i = 0; $i < $versionCount; ++$i) {
+            $draft = $this->contentService->createContentDraft($content->versionInfo->contentInfo, $content->versionInfo);
+        }
+
+        if ($draft) {
+            $content = $this->contentService->publishVersion($draft->versionInfo);
+        }
+
+        return $content;
+    }
+
+    /**
+     * createFields
+     *
+     * @param ContentCreate $contentCreate
+     * @param Field[] $fields
+     * @return ContentCreate
+     */
+    protected function createFields($contentCreate, array $fields, array $languages)
+    {
+        $mainLanguage = reset($languages);
+        foreach( $fields as $identifier => $field ) {
             $data = $field->dataProvider->get();
             $contentCreate->setField( $identifier, $data );
 
@@ -99,26 +158,7 @@ class CreateActorHandler extends Handler
             }
         }
 
-        $location = new \eZ\Publish\API\Repository\Values\Content\LocationCreateStruct(
-            array(
-                "remoteId" => sha1(microtime()),
-                "parentLocationId" => $actor->parentLocationId
-            )
-        );
-
-        $contentDraft = $this->contentService->createContent( $contentCreate, array( $location ) );
-
-        $content = $this->contentService->publishVersion(
-            $contentDraft->versionInfo
-        );
-
-        // Remember created content objects
-        $actor->storage->store( $content );
-
-        if ( $actor->subActor !== null )
-        {
-            $actor->subActor->parentLocationId = $content->versionInfo->contentInfo->mainLocationId;
-        }
+        return $contentCreate;
     }
 
     /**
