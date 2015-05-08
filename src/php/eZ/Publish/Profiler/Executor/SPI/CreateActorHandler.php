@@ -52,16 +52,34 @@ class CreateActorHandler extends Handler
         $fields = array();
         foreach ( $type->fieldDefinitions as $fieldDefinition )
         {
-            $fieldType = $this->getFieldType( $fieldDefinition->fieldType );
+            $spiFieldType = $this->getFieldType( $fieldDefinition->fieldType );
+            $profilerFieldType = $actor->type->fields[$fieldDefinition->identifier];
 
-            $data = $actor->type->fields[$fieldDefinition->identifier]->dataProvider->get($mainLanguage->languageCode);
-            $value = $fieldType->acceptValue( $data );
+            $data = $profilerFieldType->dataProvider->get($mainLanguage->languageCode);
+            $value = $spiFieldType->acceptValue( $data );
             $fields[] = new Persistence\Content\Field( array(
                 'fieldDefinitionId' => $fieldDefinition->id,
                 'type' => $fieldDefinition->fieldType,
                 'languageCode' => $mainLanguage->languageCode,
-                'value' => $fieldType->toPersistenceValue( $value ),
+                'value' => $spiFieldType->toPersistenceValue( $value ),
             ) );
+
+            if ($profilerFieldType->translatable) {
+                foreach ($languages as $language) {
+                    if ($language == $mainLanguage) {
+                        continue;
+                    }
+
+                    $data = $profilerFieldType->dataProvider->get($language->languageCode);
+                    $value = $spiFieldType->acceptValue( $data );
+                    $fields[] = new Persistence\Content\Field( array(
+                        'fieldDefinitionId' => $fieldDefinition->id,
+                        'type' => $fieldDefinition->fieldType,
+                        'languageCode' => $language->languageCode,
+                        'value' => $spiFieldType->toPersistenceValue( $value ),
+                    ) );
+                }
+            }
         }
 
         $contentHandler = $this->handler->contentHandler();
