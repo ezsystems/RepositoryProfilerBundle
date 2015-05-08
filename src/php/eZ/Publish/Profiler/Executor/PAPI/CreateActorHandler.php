@@ -66,12 +66,17 @@ class CreateActorHandler extends Handler
      */
     public function handle(Actor $actor)
     {
-        $language = $this->getLanguage('eng-US', 'English (US)');
-        $type = $this->getContentType($actor->type, $language);
+        $languages = array();
+        foreach ($actor->type->languageCodes as $languageCode) {
+            $languages[$languageCode] = $this->getLanguage($languageCode, "Test ($languageCode)");
+        }
+        $mainLanguage = reset($languages);
+
+        $type = $this->getContentType($actor->type, $languages);
 
         $contentCreate = $this->contentService->newContentCreateStruct(
             $type,
-            $language->languageCode
+            $mainLanguage->languageCode
         );
 
         $contentCreate->sectionId = 1;
@@ -161,7 +166,7 @@ class CreateActorHandler extends Handler
      * @throws \RuntimeException
      * @return \eZ\Publish\Core\Repository\Values\ContentType\ContentType
      */
-    private function getContentType( ContentType $type, $language )
+    private function getContentType( ContentType $type, $languages )
     {
         $identifier = 'profiler-' . $type->name;
         try {
@@ -174,10 +179,9 @@ class CreateActorHandler extends Handler
 
         $contentTypeCreate = $this->contentTypeService->newContentTypeCreateStruct( $identifier );
 
-        $contentTypeCreate->mainLanguageCode = $language->languageCode;
-        $contentTypeCreate->names = array(
-            $language->languageCode => $type->name
-        );
+        $mainLanguage = reset($languages);
+        $contentTypeCreate->mainLanguageCode = $mainLanguage->languageCode;
+        $contentTypeCreate->names = array_fill_keys(array_keys($languages), ucfirst($type->name));
         $contentTypeCreate->creationDate = new \DateTime();
         $contentTypeCreate->remoteId = sha1(microtime());
         $contentTypeCreate->isContainer = true;
@@ -192,24 +196,24 @@ class CreateActorHandler extends Handler
             {
                 case $field instanceof Field\TextLine:
                     $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'ezstring', $language, $fieldPosition )
+                        $this->createFieldDefinition( $name, 'ezstring', $languages, $fieldPosition )
                     );
                     break;
                 case $field instanceof Field\XmlText:
                     $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'ezxmltext', $language, $fieldPosition )
+                        $this->createFieldDefinition( $name, 'ezxmltext', $languages, $fieldPosition )
                     );
                     break;
 
                 case $field instanceof Field\Author:
                     $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'ezauthor', $language, $fieldPosition, false )
+                        $this->createFieldDefinition( $name, 'ezauthor', $languages, $fieldPosition, false )
                     );
                     break;
 
                 case $field instanceof Field\TextBlock:
                     $contentTypeCreate->addFieldDefinition(
-                        $this->createFieldDefinition( $name, 'eztext', $language, $fieldPosition )
+                        $this->createFieldDefinition( $name, 'eztext', $languages, $fieldPosition )
                     );
                     break;
                 default:
@@ -243,7 +247,7 @@ class CreateActorHandler extends Handler
      * @param bool $translatable
      * @return \eZ\Publish\API\Repository\Values\ContentType\FieldDefinitionCreateStruct
      */
-    private function createFieldDefinition($name, $ezType, $language, $position, $translatable = true)
+    private function createFieldDefinition($name, $ezType, array $languages, $position, $translatable = true)
     {
         $notSearchable = array('eztext');
         $fieldDefinitionCreate = $this->contentTypeService->newFieldDefinitionCreateStruct(
@@ -251,9 +255,7 @@ class CreateActorHandler extends Handler
             $ezType
         );
 
-        $fieldDefinitionCreate->names = array(
-            $language->languageCode => $name
-        );
+        $fieldDefinitionCreate->names = array_fill_keys(array_keys($languages), ucfirst($name));
         $fieldDefinitionCreate->isTranslatable = true;
         $fieldDefinitionCreate->fieldGroup = "main";
         $fieldDefinitionCreate->position = $position;

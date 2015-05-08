@@ -8,10 +8,16 @@ class ContentType
 
     public $fields;
 
-    public function __construct( $name, $fields )
+    public $languageCodes;
+
+    public $versionCount;
+
+    public function __construct( $name, $fields, array $languageCodes, $versionCount = 1 )
     {
         $this->name = $name;
         $this->fields = $fields;
+        $this->languageCodes = $languageCodes;
+        $this->versionCount = $versionCount;
     }
 }
 

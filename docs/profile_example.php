@@ -4,11 +4,14 @@ namespace eZ\Publish\Profiler;
 
 use eZ\Publish\API\Repository\Values\Content\Query;
 
+$defaultLanguage = 'eng-GB';
+
 $folderType = new ContentType(
     'folder',
     array(
         'title' => new Field\TextLine(),
-    )
+    ),
+    array($defaultLanguage)
 );
 
 $articleType = new ContentType(
@@ -18,7 +21,9 @@ $articleType = new ContentType(
         'body' => new Field\XmlText( new DataProvider\XmlText() ),
         'author' => new Field\Author( new DataProvider\User( 'editor' ) ),
         // …
-    )
+    ),
+    array($defaultLanguage, 'ger-DE', 'fra-FR'),
+    8 // Average number of versions
 );
 
 $commentType = new ContentType(
@@ -30,7 +35,9 @@ $commentType = new ContentType(
             new DataProvider\User( 'user' )
         ) ) ),
         // …
-    )
+    ),
+    array($defaultLanguage),
+    2 // Average number of versions
 );
 
 $createTask = new Task(
@@ -83,7 +90,7 @@ $sortedSearchTask = new Task(
 );
 
 // Current executor – provided by the caller
-/*
+//*
 $executor->run(
     array(
         new Constraint\Ratio( $createTask, 1 ),
@@ -91,6 +98,7 @@ $executor->run(
     new Aborter\Count(50)
 ); // */
 
+/*
 $executor->run(
     array(
         new Constraint\Ratio( $createTask, 1/10 ),
@@ -99,4 +107,4 @@ $executor->run(
         new Constraint\Ratio( $sortedSearchTask, 1/5 ),
     ),
     new Aborter\Count(200)
-);
+); // */
