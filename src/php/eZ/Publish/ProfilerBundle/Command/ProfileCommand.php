@@ -30,10 +30,16 @@ class ProfileCommand extends ContainerAwareCommand
                 'Profile to run'
             )
             ->addOption(
+                'seed',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Random seed for more reproducible results'
+            )
+            ->addOption(
                 'yes',
                 null,
                 InputOption::VALUE_NONE,
-                'Force run, which will reset the current database.'
+                'Force run, which will reset the current database'
             )
             ->addOption(
                 'no-reset',
@@ -48,6 +54,10 @@ class ProfileCommand extends ContainerAwareCommand
         $executor = $this->getContainer()->get('ezpublish.profiler.executor.' . $input->getArgument('target'));
 
         $dialog = $this->getHelper('dialog');
+        if ($input->getOption('seed')) {
+            mt_srand($input->getOption('seed'));
+        }
+
         if (!$input->getOption('yes') &&
             !$dialog->askConfirmation($output, "<question>Really run the profiler? This will reset the database.</question>", false)) {
             return 1;
