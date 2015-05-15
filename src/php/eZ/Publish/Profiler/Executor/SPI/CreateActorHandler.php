@@ -14,6 +14,8 @@ class CreateActorHandler extends Handler
 {
     protected $handler;
 
+    protected $contentTypes = array();
+
     protected $fieldTypeRegistry;
 
     public function __construct( Persistence\Handler $handler, CreateActorHandler\FieldTypeRegistry $fieldTypeRegistry )
@@ -234,10 +236,14 @@ class CreateActorHandler extends Handler
 
     protected function getContentType( $type, array $languages )
     {
-        $contentTypeHandler = $this->handler->contentTypeHandler();
         $identifier = 'profiler-' . $type->name;
+        if (isset($this->contentTypes[$identifier])) {
+            return $this->contentTypes[$identifier];
+        }
+
+        $contentTypeHandler = $this->handler->contentTypeHandler();
         try {
-            return $contentTypeHandler->loadByIdentifier( $identifier );
+            return $this->contentTypes[$identifier] = $contentTypeHandler->loadByIdentifier( $identifier );
         }
         catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
         {
@@ -253,7 +259,7 @@ class CreateActorHandler extends Handler
         }
 
         $mainLanguage = reset($languages);
-        return $contentTypeHandler->create(
+        return $this->contentTypes[$identifier] = $contentTypeHandler->create(
             new Persistence\Content\Type\CreateStruct( array(
                 'name' => array_fill_keys(array_keys($languages), $type->name),
                 'status' => Persistence\Content\Type::STATUS_DEFINED,
