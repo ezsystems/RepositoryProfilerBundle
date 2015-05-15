@@ -15,12 +15,12 @@ class CreateActorHandler extends Handler
 {
     protected $handler;
 
-    protected $fieldTypeCollection;
+    protected $fieldTypeRegistry;
 
-    public function __construct( Persistence\Handler $handler, FieldTypeCollectionFactory $fieldTypeCollection )
+    public function __construct( Persistence\Handler $handler, CreateActorHandler\FieldTypeRegistry $fieldTypeRegistry )
     {
         $this->handler = $handler;
-        $this->fieldTypeCollection = $fieldTypeCollection;
+        $this->fieldTypeRegistry = $fieldTypeRegistry;
     }
 
     /**
@@ -176,13 +176,7 @@ class CreateActorHandler extends Handler
      */
     protected function getFieldType( $name )
     {
-        $fieldTypes = $this->fieldTypeCollection->getFieldTypes();
-
-        if (isset($fieldTypes[$name])) {
-            return $fieldTypes[$name]();
-        }
-
-        throw new \OutOfBoundsException("unknwon field type $name");
+        return $this->fieldTypeRegistry->getFieldType($name);
     }
 
     /**
@@ -288,4 +282,3 @@ class CreateActorHandler extends Handler
         ) );
     }
 }
-

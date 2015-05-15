@@ -12,7 +12,11 @@
                         <argument type="service">
                             <service class="eZ\Publish\Profiler\Executor\SPI\CreateActorHandler">
                                 <argument type="service" id="ezpublish.api.persistence_handler" />
-                                <argument type="service" id="ezpublish.field_type_collection.factory" />
+                                <argument type="service">
+                                    <service class="eZ\Publish\Profiler\Executor\SPI\CreateActorHandler\FieldTypeRegistry">
+                                        <argument type="service" id="ezpublish.field_type_collection.factory" />
+                                    </service>
+                                </argument>
                             </service>
                         </argument>
                         <argument type="service">
