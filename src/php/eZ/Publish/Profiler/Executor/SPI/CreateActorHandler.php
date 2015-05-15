@@ -9,7 +9,6 @@ use eZ\Publish\Profiler\Actor\Handler;
 use eZ\Publish\Profiler\GaussDistributor;
 
 use eZ\Publish\SPI\Persistence;
-use eZ\Publish\Core\Base\Container\ApiLoader\FieldTypeCollectionFactory;
 
 class CreateActorHandler extends Handler
 {
