@@ -52,6 +52,8 @@ class CreateActorHandler extends Handler
         $fields = $this->getFields($actor, $type, $languages);
         $contentHandler = $this->handler->contentHandler();
         $name = md5(microtime());
+
+        $this->handler->beginTransaction();
         $contentCreateSruct = new Persistence\Content\CreateStruct( array(
             'name' => array_fill_keys(array_keys($languages), $name),
             'typeId' => $type->id,
@@ -79,6 +81,7 @@ class CreateActorHandler extends Handler
             ) )
         );
         $content = $this->ageContent($actor, $content);
+        $this->handler->commit();
 
         // Remember created content objects
         $actor->storage->store( $content );
