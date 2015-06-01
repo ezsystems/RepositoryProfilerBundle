@@ -1,4 +1,8 @@
 vendor
 var/cache
 
+/apache-jmeter*
 /composer.phar
+/*.log
+/*.tgz
+/*.zip
