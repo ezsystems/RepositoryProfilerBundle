@@ -21,7 +21,7 @@ Install the bundle inside of an existing ez-platform installation::
 
 Then you can run the performance tests using::
 
-    php ezpublish/console profiler:run papi vendor/ezsystems/profiler-bundle/docs/enterprise_example.php
+    php ezpublish/console profiler:run papi vendor/ezsystems/profiler-bundle/docs/profile_example.php
 
 The provided file specifies the performance test you want to run. The file
 mentioned here is an example file provided with the bundle.
