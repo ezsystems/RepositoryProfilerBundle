@@ -109,7 +109,7 @@ class Statistics extends Logger
             'minimum' => reset($runtimes),
             'maximum' => end($runtimes),
             'average' => $average,
-            '90' => array_sum(array_slice($runtimes, 0, $c90 = floor($count * .9))) / $c90,
+            '90' => array_sum(array_slice($runtimes, 0, $c90 = ceil($count * .9))) / $c90,
             'median' => $runtimes[floor($count / 2)],
             'variance' => $variance,
             'std_deviation' => sqrt($variance),
