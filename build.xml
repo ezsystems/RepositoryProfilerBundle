@@ -39,9 +39,6 @@
             <arg value="-t" />
             <arg value="${basedir}/src/jmeter/testplan.jmx" />
 
-            <arg value="-p" />
-            <arg value="${basedir}/jmeter.properties" />
-
             <arg value="-l" />
             <arg value="${jmeter.log.file}" />
 
@@ -50,6 +47,13 @@
             <arg value="-Jjmeter.save.saveservice.response_data.on_error=true" />
             <arg value="-Jjmeter.data.dir=${builddir}" />
             <arg value="-Jjmeter.log.jtl=${builddir}/result.jtl" />
+
+            <arg value="-Jjmeter.server=${jmeter.server}" />
+            <arg value="-Jjmeter.time.rampup=${jmeter.time.rampup}" />
+            <arg value="-Jjmeter.time.execution=${jmeter.time.execution}" />
+            <arg value="-Jcrawler.usertype.a.starting.uri=${crawler.usertype.a.starting.uri}" />
+            <arg value="-Jcrawler.usertype.a.breadth=${crawler.usertype.a.breadth}" />
+            <arg value="-Jcrawler.usertype.a.depth=${crawler.usertype.a.depth}" />
         </exec>
     </target>
 
