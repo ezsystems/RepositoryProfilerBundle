@@ -12,6 +12,11 @@
             <stringProp name="Argument.value">${__UUID()}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
+          <elementProp name="jmeter.log.jtl" elementType="Argument">
+            <stringProp name="Argument.name">jmeter.log.jtl</stringProp>
+            <stringProp name="Argument.value">${__P(jmeter.log.jtl,../../build/result.jtl)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
           <elementProp name="jmeter.server" elementType="Argument">
             <stringProp name="Argument.name">jmeter.server</stringProp>
             <stringProp name="Argument.value">${__P(jmeter.server,awesomeshop.qafoo.local)}</stringProp>
@@ -55,7 +60,6 @@
         <stringProp name="HTTPSampler.port"></stringProp>
         <stringProp name="HTTPSampler.connect_timeout">30000</stringProp>
         <stringProp name="HTTPSampler.response_timeout">60000</stringProp>
-        <stringProp name="HTTPSampler.protocol">${general.protocol.default}</stringProp>
         <stringProp name="HTTPSampler.contentEncoding"></stringProp>
         <stringProp name="HTTPSampler.path">/</stringProp>
         <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
@@ -282,9 +286,10 @@
               <hashTree/>
             </hashTree>
           </hashTree>
-          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Konstanter Timer" enabled="true">
+          <GaussianRandomTimer guiclass="GaussianRandomTimerGui" testclass="GaussianRandomTimer" testname="Gaussian Random Timer" enabled="true">
             <stringProp name="ConstantTimer.delay">250</stringProp>
-          </ConstantTimer>
+            <stringProp name="RandomTimer.range">100.0</stringProp>
+          </GaussianRandomTimer>
           <hashTree/>
         </hashTree>
       </hashTree>
@@ -353,7 +358,7 @@
             <sampleCount>true</sampleCount>
           </value>
         </objProp>
-        <stringProp name="filename">../build/result.jtl</stringProp>
+        <stringProp name="filename">${jmeter.log.jtl}</stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>

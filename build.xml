@@ -1,0 +1,73 @@
+<?xml version='1.0' ?>
+<project name="jmeter-tests" default="build" basedir=".">
+
+    <property name="builddir" value="${basedir}/build" />
+    <property name="bindir" value="${basedir}/src/bin" />
+
+    <property file="jmeter.properties" />
+
+    <property name="jmeter.home" value="${basedir}/apache-jmeter-${jmeter.version}" />
+    <property name="jmeter.log.file" value="${builddir}/jmeter.log" />
+
+    <target name="clean">
+        <delete dir="${builddir}" />
+    </target>
+
+    <target name="prepare" depends="clean">
+        <mkdir dir="${builddir}" />
+    </target>
+
+    <target name="-verify-download">
+        <available file="${jmeter.home}" property="jmeter.downloaded"/>
+    </target>
+
+    <target name="download" depends="-verify-download" unless="${jmeter.downloaded}">
+        <exec executable="${bindir}/init_jmeter.sh" dir="${basedir}">
+            <env key="JMETER_VERSION" value="${jmeter.version}" />
+        </exec>
+    </target>
+
+    <target name="jmeter" depends="prepare, download">
+        <property file="jmeter.properties" />
+        <echo>Testing ${jmeter.server}</echo>
+
+        <exec executable="java" dir="${jmeter.home}/bin">
+            <arg value="-jar" />
+            <arg value="${jmeter.home}/bin/ApacheJMeter.jar" />
+            <arg value="-n" />
+
+            <arg value="-t" />
+            <arg value="${basedir}/src/jmeter/testplan.jmx" />
+
+            <arg value="-l" />
+            <arg value="${jmeter.log.file}" />
+
+            <arg value="-Jjmeter.save.saveservice.output_format=xml" />
+            <arg value="-Jjmeter.save.saveservice.url=true" />
+            <arg value="-Jjmeter.save.saveservice.response_data.on_error=true" />
+            <arg value="-Jjmeter.data.dir=${builddir}" />
+            <arg value="-Jjmeter.log.jtl=${builddir}/result.jtl" />
+
+            <arg value="-Jjmeter.server=${jmeter.server}" />
+            <arg value="-Jjmeter.time.rampup=${jmeter.time.rampup}" />
+            <arg value="-Jjmeter.time.execution=${jmeter.time.execution}" />
+            <arg value="-Jcrawler.usertype.a.starting.uri=${crawler.usertype.a.starting.uri}" />
+            <arg value="-Jcrawler.usertype.a.breadth=${crawler.usertype.a.breadth}" />
+            <arg value="-Jcrawler.usertype.a.depth=${crawler.usertype.a.depth}" />
+        </exec>
+    </target>
+
+    <target name="listings">
+        <exec executable="${bindir}/createListings">
+            <arg value="${builddir}" />
+        </exec>
+        <exec executable="${bindir}/createListings"
+              output="${builddir}/result.csv"
+              errorproperty="null">
+            <arg value="${builddir}" />
+        </exec>
+    </target>
+
+    <target name="build" depends="jmeter, listings">
+    </target>
+</project>

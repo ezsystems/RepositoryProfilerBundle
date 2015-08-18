@@ -1,0 +1,204 @@
+#!/usr/bin/env php
+<?php
+
+require_once __DIR__ . '/common.php';
+
+function parseJmeterLog( $logFile, $resolution = 10 )
+{
+    $log = array('total' => array());
+
+    $doc = new XMLReader();
+    $doc->open( $logFile );
+
+    while ( $doc->read() )
+    {
+        if ( ( $doc->nodeType !== XMLReader::ELEMENT ) ||
+             ( $doc->name !== 'httpSample' ) )
+        {
+            continue;
+        }
+
+        if ( $doc->hasAttributes )
+        {
+            $attributes = array();
+            while( $doc->moveToNextAttribute() )
+            {
+                $attributes[$doc->name] = $doc->value;
+            }
+
+            $url = $attributes['lb'];
+
+            $data = array(
+                'ts'           => $attributes['ts'],
+                'url'          => $attributes['lb'],
+                'useCase'      => $attributes['tn'],
+                'responseCode' => $attributes['rc'],
+                'success'      => $attributes['s'] === 'true',
+                'time'         => (int) $attributes['t'],
+            );
+
+            $logTime = floor( $data['ts'] / ( 1000 * $resolution ) ) * $resolution;
+
+            if (!isset($log[$logTime])) {
+                fwrite(STDERR, ".");
+            }
+
+            if ( !isset( $log[$logTime][$url] ) )
+            {
+                $log[$logTime][$url] = array(
+                    'failures'      => 0,
+                    'averageTime'   => 0,
+                    'minTime'       => $data['time'],
+                    'maxTime'       => $data['time'],
+                    'medTime'       => array(),
+                    '90%Time'       => array(),
+                    '20x'           => 0,
+                    '30x'           => 0,
+                    '40x'           => 0,
+                    '50x'           => 0,
+                    'requests'      => 0
+                );
+            }
+
+            $log[$logTime][$url]['failures']    += $data['success'] ? 0 : 1;
+            $log[$logTime][$url]['20x']         += '2' == $data['responseCode'][0] ? 1 : 0;
+            $log[$logTime][$url]['30x']         += '3' == $data['responseCode'][0] ? 1 : 0;
+            $log[$logTime][$url]['40x']         += '4' == $data['responseCode'][0] ? 1 : 0;
+            $log[$logTime][$url]['50x']         += '5' == $data['responseCode'][0] ? 1 : 0;
+            $log[$logTime][$url]['averageTime'] += $data['time'];
+            $log[$logTime][$url]['minTime']      = min( $log[$logTime][$url]['minTime'], $data['time'] );
+            $log[$logTime][$url]['maxTime']      = max( $log[$logTime][$url]['maxTime'], $data['time'] );
+            $log[$logTime][$url]['medTime'][]    = $data['time'];
+            $log[$logTime][$url]['90%Time'][]    = $data['time'];
+
+            ++$log[$logTime][$url]['requests'];
+        }
+    }
+
+    fwrite(STDERR, "\n");
+
+    foreach ( $log as $time => $urls )
+    {
+        foreach ($urls as $url => $data) {
+            $log[$time][$url]['Debug']        = implode(', ', $log[$time][$url]['medTime']);
+            $log[$time][$url]['averageTime'] /= $data['requests'];
+            $log[$time][$url]['medTime']      = averageOfPercent($log[$time][$url]['medTime'], 0.5);
+            $log[$time][$url]['90%Time']      = averageOfPercent($log[$time][$url]['90%Time'], 0.9);
+
+            if (!isset($log['total'][$url])) {
+                $log['total'][$url] = array(
+                    'requests' => $data['requests'],
+                    'averageTime' => $log[$time][$url]['averageTime'],
+                    'medTime' => 0,
+                    '90%Time' => 0,
+                );
+            } else {
+                $newTotal = $log['total'][$url]['requests'] + $data['requests'];
+                $log['total'][$url]['averageTime'] =
+                    (($log['total'][$url]['requests'] / $newTotal) * $log['total'][$url]['averageTime']) +
+                    (($data['requests'] / $newTotal) * $log[$time][$url]['averageTime']);
+                $log['total'][$url]['requests'] = $newTotal;
+            }
+        }
+    }
+
+    return $log;
+}
+
+################################################################################
+#
+#   CLI CODE STARTS HERE
+#
+################################################################################
+
+$inputDir = __DIR__ . '/../build';
+$outputDir = $inputDir;
+$testName = date('Y-m-d\TH:i:s') . '_JMeter-Result';
+$chartResolution = 300;
+$maxPages = 10;
+$debug = false;
+
+for ($i = 1; $i < $argc; ++$i) {
+
+    switch ($argv[$i]) {
+        case '-r':
+        case '--resolution':
+            $chartResolution = (int) $argv[++$i];
+            break;
+
+        case '-t':
+        case '--testname':
+            $testName = $argv[++$i];
+            break;
+
+        case '-o':
+        case '--output':
+            $outputDir = $argv[++$i];
+            break;
+
+        case '--debug':
+            $debug = true;
+            break;
+
+        default:
+            $inputDir = $argv[$i];
+            break;
+    }
+
+}
+
+/* Ensure one, but only one jmeter test log exists */
+$jmeterLog = glob("{$inputDir}/*.jtl");
+if (0 === count($jmeterLog)) {
+    fwrite(STDERR, "Cannot find *.jtl test log in data directory '{$inputDir}'.\n");
+    exit(42);
+}
+if (1 !== count($jmeterLog)) {
+    fwrite(STDERR, "Cannot find unique *.jtl test log in data directory '{$inputDir}'.\n");
+    exit(42);
+}
+$jmeterLog = $jmeterLog[0];
+
+
+/* Ensure output directory exists */
+if (false === file_exists($outputDir)) {
+    mkdir($outputDir, 0755, true);
+}
+if (false === is_dir($outputDir)) {
+    fwrite(STDERR, "Output directory '{$outputDir}' does not exist.\n");
+    exit(23);
+}
+
+fputs(STDERR, "Generating listings for $testName...\n");
+if ($debug) {
+    fputs(STDERR, "adding Debug information...\n");
+}
+
+$data = parseJmeterLog( $jmeterLog, $chartResolution );
+array_pop($data);
+
+fputcsv(STDOUT, array('Date', 'URL', 'Requests', 'Average', 'Median', '90% Percentile', $debug ? 'Values' : ''), ';');
+foreach ($data as $time => $urls) {
+    uasort(
+        $urls,
+        function (array $a, array $b) {
+            return $b['90%Time'] >= $a['90%Time'];
+        }
+    );
+
+    foreach ($urls as $url => $timing) {
+        if (strpos($url, 'Error:') !== false) {
+            continue;
+        }
+
+        fputcsv(STDOUT, array(
+            ($time == 'total') ? $time : date('Y/m/d H:i:s', $time),
+            $url,
+            $timing['requests'],
+            sprintf('%.5f', ($timing['averageTime'] / 1000)),
+            sprintf('%.5f', ($timing['medTime'] / 1000)),
+            sprintf('%.5f', ($timing['90%Time'] / 1000)),
+            $debug ? $timing['Debug'] : '',
+        ), ';');
+    }
+}

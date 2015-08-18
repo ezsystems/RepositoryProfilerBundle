@@ -15,10 +15,11 @@ download() {
        echo "File $FILE exists."
     else
        echo "File $FILE does not exist. Downloading JMeter from $URL ..."
-       curl -O $URL
+       curl -s -O $URL
        echo "Downloaded!"
     fi
     tar -zxf $FILE
+    rm $FILE
     echo "Extracted JMeter"
 
     EXTENSIONS_DIR="JMeterPlugins-Extras-1.2.1"
@@ -30,10 +31,11 @@ download() {
         echo "File ${EXTENSION_FILE} exists."
     else
         echo "File ${EXTENSION_FILE} does not exist. Downloading JMeter Plugins from ${EXTENSIONS_URL} ..."
-        curl -O -v "${EXTENSIONS_URL}"
+        curl -s -O "${EXTENSIONS_URL}"
     fi
 
     unzip -oq "${EXTENSIONS_FILE}" -x "LICENSE" "README" -d "${DIR}"
+    rm $EXTENSIONS_FILE
     echo "Extracted JMeterPlugins-Extras"
 }
 
