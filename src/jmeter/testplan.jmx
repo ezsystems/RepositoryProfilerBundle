@@ -12,6 +12,11 @@
             <stringProp name="Argument.value">${__UUID()}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
+          <elementProp name="jmeter.logfile" elementType="Argument">
+            <stringProp name="Argument.name">jmeter.log.jtl</stringProp>
+            <stringProp name="Argument.value">${__P(jmeter.log.jtl,../../build/result.jtl)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
           <elementProp name="jmeter.server" elementType="Argument">
             <stringProp name="Argument.name">jmeter.server</stringProp>
             <stringProp name="Argument.value">${__P(jmeter.server,awesomeshop.qafoo.local)}</stringProp>
@@ -353,7 +358,7 @@
             <sampleCount>true</sampleCount>
           </value>
         </objProp>
-        <stringProp name="filename">../build/result.jtl</stringProp>
+        <stringProp name="filename">${jmeter.log.jtl}</stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>

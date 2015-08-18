@@ -49,6 +49,7 @@
             <arg value="-Jjmeter.save.saveservice.url=true" />
             <arg value="-Jjmeter.save.saveservice.response_data.on_error=true" />
             <arg value="-Jjmeter.data.dir=${builddir}" />
+            <arg value="-Jjmeter.log.jtl=${builddir}/result.jtl" />
         </exec>
     </target>
 
