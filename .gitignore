@@ -1,6 +1,7 @@
 vendor
 var/cache
 
+/jmeter.properties.local
 /build
 /apache-jmeter*
 /composer.phar

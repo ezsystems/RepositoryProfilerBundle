@@ -4,6 +4,7 @@
     <property name="builddir" value="${basedir}/build" />
     <property name="bindir" value="${basedir}/src/bin" />
 
+    <property file="jmeter.properties.local" />
     <property file="jmeter.properties" />
 
     <property name="jmeter.home" value="${basedir}/apache-jmeter-${jmeter.version}" />
