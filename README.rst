@@ -154,6 +154,9 @@ The Aborter defines when the execution will be halted. It could also check for
 the amount of create content objects or just abort after a given time span. The
 ``Count`` aborter just aborts after the given number of iterations.
 
+You might, like done in the example, define multiple executors which then will
+be executed subsequently.
+
 ------------
 jMeter Tests
 ------------
@@ -183,6 +186,27 @@ You can configure the run by creating a file ``jmeter.properties.local`` to
 overwrite the variables in the ``jmeter.properties`` file. You definitely want
 to adapt the ``jmeter.server`` in there to point to the website you want to put
 under test. All options are documented in the ``jmeter.properties`` file.
+
+The implemented "Random Browser" only executes ``GET`` requests accessing
+random links starting at the configured start page. It will not log in or
+submit any forms (searches).
+
+There are two options defining the behaviour of the random surfer:
+
+* ``crawler.usertype.a.breadth``
+  
+  On average, how many links are clicked on the same page. Causes the user to
+  click more links on the start page and the subsequent pages. (Default: 2)
+
+* ``crawler.usertype.a.depth``
+
+  On average, how deep a user will click through the website. Causes the user
+  to follow links deeper into the website structure. (Default: 3)
+
+Another important configuration is the ``jmeter.users`` value. It defines how
+many users will access / surf the website in parallel. The default of 5 means
+that 5 users will simultaneously surf on the website. With the configured
+timings that means something between 1 Req/s and 2 Req/s.
 
 
 ..
