@@ -77,6 +77,11 @@ function parseJmeterLog( $logFile, $resolution = 10 )
 
     foreach ( $log as $time => $urls )
     {
+        $log['total']['*'] = array(
+            'requests' => 0,
+            'times' => array(),
+        );
+
         foreach ($urls as $url => $data) {
             if (!isset($log['total'][$url])) {
                 $log['total'][$url] = array(
@@ -87,6 +92,9 @@ function parseJmeterLog( $logFile, $resolution = 10 )
                 $log['total'][$url]['requests'] += $data['requests'];
                 $log['total'][$url]['times'] = array_merge($log['total'][$url]['times'], $data['times']);
             }
+
+            $log['total']['*']['requests'] += $data['requests'];
+            $log['total']['*']['times'] = array_merge($log['total']['*']['times'], $data['times']);
         }
     }
 
@@ -94,6 +102,8 @@ function parseJmeterLog( $logFile, $resolution = 10 )
         sort($data['times']);
         $log['total'][$url]['averageTime'] = averageOfPercent($data['times'], 1);
         $log['total'][$url]['90%Time'] = averageOfPercent($data['times'], .9);
+        $log['total'][$url]['95%Time'] = averageOfPercent($data['times'], .95);
+        $log['total'][$url]['99%Time'] = averageOfPercent($data['times'], .99);
 
         $log['total'][$url]['medTime'] = $data['times'][floor(count($data['times']) / 2)];
     }
@@ -173,7 +183,7 @@ if ($debug) {
 $data = parseJmeterLog( $jmeterLog, $chartResolution );
 array_pop($data);
 
-fputcsv(STDOUT, array('Date', 'URL', 'Requests', 'Average', 'Median', '90% Percentile', $debug ? 'Values' : ''), ';');
+fputcsv(STDOUT, array('Date', 'URL', 'Requests', 'Average', 'Median', '90% Percentile', '95% Percentile', '99% Percentile', $debug ? 'Values' : ''), ';');
 foreach ($data as $time => $urls) {
     uasort(
         $urls,
@@ -192,8 +202,10 @@ foreach ($data as $time => $urls) {
             $url,
             $timing['requests'],
             sprintf('%.5f', ($timing['averageTime'] / 1000)),
-            sprintf('%.5f', ($timing['medTime'] / 1000)),
-            sprintf('%.5f', ($timing['90%Time'] / 1000)),
+            sprintf('%.8f', ($timing['medTime'] / 1000)),
+            sprintf('%.8f', ($timing['90%Time'] / 1000)),
+            sprintf('%.8f', ($timing['95%Time'] / 1000)),
+            sprintf('%.8f', ($timing['99%Time'] / 1000)),
             $debug ? $timing['Debug'] : '',
         ), ';');
     }
