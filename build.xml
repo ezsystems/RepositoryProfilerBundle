@@ -30,32 +30,44 @@
 
     <target name="jmeter" depends="prepare, download">
         <property file="jmeter.properties" />
-        <echo>Testing ${jmeter.server}</echo>
+        <echo>Testing ${jmeter.server} for ${jmeter.time.execution}s</echo>
 
-        <exec executable="java" dir="${jmeter.home}/bin">
-            <arg value="-jar" />
-            <arg value="${jmeter.home}/bin/ApacheJMeter.jar" />
-            <arg value="-n" />
+        <parallel>
+            <sequential>
+                <exec executable="java" dir="${jmeter.home}/bin">
+                    <arg value="-jar" />
+                    <arg value="${jmeter.home}/bin/ApacheJMeter.jar" />
+                    <arg value="-n" />
 
-            <arg value="-t" />
-            <arg value="${basedir}/src/jmeter/testplan.jmx" />
+                    <arg value="-t" />
+                    <arg value="${basedir}/src/jmeter/testplan.jmx" />
 
-            <arg value="-l" />
-            <arg value="${jmeter.log.file}" />
+                    <arg value="-l" />
+                    <arg value="${jmeter.log.file}" />
 
-            <arg value="-Jjmeter.save.saveservice.output_format=xml" />
-            <arg value="-Jjmeter.save.saveservice.url=true" />
-            <arg value="-Jjmeter.save.saveservice.response_data.on_error=true" />
-            <arg value="-Jjmeter.data.dir=${builddir}" />
-            <arg value="-Jjmeter.log.jtl=${builddir}/result.jtl" />
+                    <arg value="-Jjmeter.save.saveservice.output_format=xml" />
+                    <arg value="-Jjmeter.save.saveservice.url=true" />
+                    <arg value="-Jjmeter.save.saveservice.response_data.on_error=true" />
+                    <arg value="-Jjmeter.data.dir=${builddir}" />
+                    <arg value="-Jjmeter.log.jtl=${builddir}/result.jtl" />
 
-            <arg value="-Jjmeter.server=${jmeter.server}" />
-            <arg value="-Jjmeter.time.rampup=${jmeter.time.rampup}" />
-            <arg value="-Jjmeter.time.execution=${jmeter.time.execution}" />
-            <arg value="-Jcrawler.usertype.a.starting.uri=${crawler.usertype.a.starting.uri}" />
-            <arg value="-Jcrawler.usertype.a.breadth=${crawler.usertype.a.breadth}" />
-            <arg value="-Jcrawler.usertype.a.depth=${crawler.usertype.a.depth}" />
-        </exec>
+                    <arg value="-Jjmeter.server=${jmeter.server}" />
+                    <arg value="-Jjmeter.time.rampup=${jmeter.time.rampup}" />
+                    <arg value="-Jjmeter.time.execution=${jmeter.time.execution}" />
+                    <arg value="-Jjmeter.users=${jmeter.users}" />
+                    <arg value="-Jcrawler.usertype.a.starting.uri=${crawler.usertype.a.starting.uri}" />
+                    <arg value="-Jcrawler.usertype.a.breadth=${crawler.usertype.a.breadth}" />
+                    <arg value="-Jcrawler.usertype.a.depth=${crawler.usertype.a.depth}" />
+                </exec>
+            </sequential>
+            <sequential>
+                <exec executable="sleep">
+                    <arg value="${jmeter.time.execution}" />
+                </exec>
+                <exec executable="./shutdown.sh" dir="${jmeter.home}/bin">
+                </exec>
+            </sequential>
+        </parallel>
     </target>
 
     <target name="listings">
