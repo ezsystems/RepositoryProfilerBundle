@@ -65,11 +65,9 @@ function parseJmeterLog( $logFile, $resolution = 10 )
             $log[$logTime][$url]['30x']         += '3' == $data['responseCode'][0] ? 1 : 0;
             $log[$logTime][$url]['40x']         += '4' == $data['responseCode'][0] ? 1 : 0;
             $log[$logTime][$url]['50x']         += '5' == $data['responseCode'][0] ? 1 : 0;
-            $log[$logTime][$url]['averageTime'] += $data['time'];
+            $log[$logTime][$url]['times'][]      = $data['time'];
             $log[$logTime][$url]['minTime']      = min( $log[$logTime][$url]['minTime'], $data['time'] );
             $log[$logTime][$url]['maxTime']      = max( $log[$logTime][$url]['maxTime'], $data['time'] );
-            $log[$logTime][$url]['medTime'][]    = $data['time'];
-            $log[$logTime][$url]['90%Time'][]    = $data['time'];
 
             ++$log[$logTime][$url]['requests'];
         }
@@ -80,26 +78,24 @@ function parseJmeterLog( $logFile, $resolution = 10 )
     foreach ( $log as $time => $urls )
     {
         foreach ($urls as $url => $data) {
-            $log[$time][$url]['Debug']        = implode(', ', $log[$time][$url]['medTime']);
-            $log[$time][$url]['averageTime'] /= $data['requests'];
-            $log[$time][$url]['medTime']      = averageOfPercent($log[$time][$url]['medTime'], 0.5);
-            $log[$time][$url]['90%Time']      = averageOfPercent($log[$time][$url]['90%Time'], 0.9);
-
             if (!isset($log['total'][$url])) {
                 $log['total'][$url] = array(
                     'requests' => $data['requests'],
-                    'averageTime' => $log[$time][$url]['averageTime'],
-                    'medTime' => 0,
-                    '90%Time' => 0,
+                    'times' => $log[$time][$url]['times'],
                 );
             } else {
-                $newTotal = $log['total'][$url]['requests'] + $data['requests'];
-                $log['total'][$url]['averageTime'] =
-                    (($log['total'][$url]['requests'] / $newTotal) * $log['total'][$url]['averageTime']) +
-                    (($data['requests'] / $newTotal) * $log[$time][$url]['averageTime']);
-                $log['total'][$url]['requests'] = $newTotal;
+                $log['total'][$url]['requests'] += $data['requests'];
+                $log['total'][$url]['times'] = array_merge($log['total'][$url]['times'], $data['times']);
             }
         }
+    }
+
+    foreach ($log['total'] as $url => $data) {
+        sort($data['times']);
+        $log['total'][$url]['averageTime'] = averageOfPercent($data['times'], 1);
+        $log['total'][$url]['90%Time'] = averageOfPercent($data['times'], .9);
+
+        $log['total'][$url]['medTime'] = $data['times'][floor(count($data['times']) / 2)];
     }
 
     return $log;

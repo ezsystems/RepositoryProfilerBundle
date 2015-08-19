@@ -60,7 +60,5 @@ function averageOfPercent(array $data, $percent)
         return 0;
     }
 
-    sort($data);
-
-    return $data[$length - 1];
+    return array_sum(array_slice($data, 0, $length)) / $length;
 }
