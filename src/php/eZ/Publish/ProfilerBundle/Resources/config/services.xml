@@ -22,12 +22,12 @@
                         <argument type="service">
                             <service class="eZ\Publish\Profiler\Executor\SPI\SubtreeActorHandler">
                                 <argument type="service" id="ezpublish.api.persistence_handler" />
-                                <argument type="service" id="ezpublish.spi.search.content_handler" />
+                                <argument type="service" id="ezpublish.spi.search" />
                             </service>
                         </argument>
                         <argument type="service">
                             <service class="eZ\Publish\Profiler\Executor\SPI\SearchActorHandler">
-                                <argument type="service" id="ezpublish.spi.search.content_handler" />
+                                <argument type="service" id="ezpublish.spi.search" />
                             </service>
                         </argument>
                     </argument>

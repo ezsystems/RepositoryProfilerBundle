@@ -15,7 +15,7 @@ class SearchActorHandler extends Handler
 {
     protected $searchHandler;
 
-    public function __construct( Search\Content\Handler $searchHandler )
+    public function __construct( Search\Handler $searchHandler )
     {
         $this->searchHandler = $searchHandler;
     }

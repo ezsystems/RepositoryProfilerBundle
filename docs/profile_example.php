@@ -18,7 +18,7 @@ $articleType = new ContentType(
     'article',
     array(
         'title' => new Field\TextLine(),
-        'body' => new Field\XmlText( new DataProvider\XmlText() ),
+        'body' => new Field\RichText( new DataProvider\RichText() ),
         'author' => new Field\Author( new DataProvider\User( 'editor' ) ),
         // …
     ),

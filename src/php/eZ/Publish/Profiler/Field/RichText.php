@@ -5,11 +5,11 @@ namespace eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\DataProvider;
 
-class TextLine extends Field
+class RichText extends Field
 {
     public function __construct( DataProvider $dataProvider = null )
     {
-        parent::__construct( $dataProvider ?: new DataProvider\StringProvider() );
+        parent::__construct( $dataProvider ?: new DataProvider\RichText() );
     }
 
     /**
@@ -19,7 +19,7 @@ class TextLine extends Field
      */
     public function getTypeIdentifier()
     {
-        return 'ezstring';
+        return 'ezrichtext';
     }
 }
 

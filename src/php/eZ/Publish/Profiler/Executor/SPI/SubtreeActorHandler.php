@@ -17,7 +17,7 @@ class SubtreeActorHandler extends Handler
 
     protected $searchHandler;
 
-    public function __construct( Persistence\Handler $handler, Search\Content\Handler $searchHandler )
+    public function __construct( Persistence\Handler $handler, Search\Handler $searchHandler )
     {
         $this->handler = $handler;
         $this->searchHandler = $searchHandler;
@@ -58,7 +58,7 @@ class SubtreeActorHandler extends Handler
         // Select all content below content
         $result = $this->searchHandler->findContent(
             new Query( array(
-                'criterion' => new Query\Criterion\Subtree( $location->pathString )
+                'filter' => new Query\Criterion\Subtree( $location->pathString )
             ) )
         );
     }

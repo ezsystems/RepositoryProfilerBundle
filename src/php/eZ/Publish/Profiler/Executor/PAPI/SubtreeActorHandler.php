@@ -77,7 +77,7 @@ class SubtreeActorHandler extends Handler
         $result = $this->searchService->findContent(
             new Query(
                 array(
-                    'criterion' => new Criterion\Subtree( $locations[0]->pathString )
+                    'filter' => new Criterion\Subtree( $locations[0]->pathString )
                 )
             )
         );

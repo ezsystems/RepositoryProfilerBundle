@@ -36,9 +36,13 @@ Install the bundle inside of an existing ez-platform installation::
 
     composer.phar require ezsystems/profiler-bundle dev-master
 
+Enable Bundle in kernel by adding:
+
+    new eZ\Publish\ProfilerBundle\EzPublishProfilerBundle(),
+
 Then you can run the performance tests using::
 
-    php ezpublish/console profiler:run papi vendor/ezsystems/profiler-bundle/docs/profile_example.php
+    php app/console profiler:run papi vendor/ezsystems/profiler-bundle/docs/profile_example.php
 
 The provided file specifies the performance test you want to run. The file
 mentioned here is an example file provided with the bundle. You can run the

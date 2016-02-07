@@ -5,7 +5,7 @@ namespace eZ\Publish\Profiler\DataProvider;
 use eZ\Publish\Profiler\DataProvider;
 use Faker;
 
-class String extends DataProvider
+class StringProvider extends DataProvider
 {
     public function get($languageCode)
     {
