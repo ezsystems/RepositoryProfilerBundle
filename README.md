@@ -1,4 +1,3 @@
-===============
 Profiler Bundle
 ===============
 
@@ -19,18 +18,15 @@ This bundle contains two means of profiling your eZ Publish stack.
   browser is implement. This is most useful together with some profiling done
   in the background to detect the actual bottlenecks.
 
-------------
 API Profiler
 ------------
 
-Warning
-=======
+### Warning
 
     Running the performance tests / profiling will chnage the contents of your
     database. Use with care.
 
-Usage
-=====
+### Usage
 
 Install the bundle inside of an existing ez-platform installation::
 
@@ -38,7 +34,9 @@ Install the bundle inside of an existing ez-platform installation::
 
 Enable Bundle in kernel by adding:
 
-    new eZ\Publish\ProfilerBundle\EzPublishProfilerBundle(),
+```php
+   new eZ\Publish\ProfilerBundle\EzPublishProfilerBundle(),
+```
 
 Then you can run the performance tests using::
 
@@ -49,29 +47,29 @@ mentioned here is an example file provided with the bundle. You can run the
 tests either against the Public API (``papi``) or directly against the SPI
 (``spi``).
 
-Configuration
-=============
+### Configuration
 
 To model different scenarios then the on provided in the example file is a
 little more complex.
 
-Types
------
+#### Types
 
 First we define multiple content types. The content type definitions are
 simpler then in the APIs to test, but are mapped accordingly::
 
+```php
     $articleType = new ContentType(
         'article',
-        array(
+        [
             'title' => new Field\TextLine(),
             'body' => new Field\XmlText( new DataProvider\XmlText() ),
             'author' => new Field\Author( new DataProvider\User( 'editor' ) ),
             // …
-        ),
-        array($defaultLanguage, 'ger-DE', 'fra-FR'), // Languages of content
+        ],
+        [$defaultLanguage, 'ger-DE', 'fra-FR'], // Languages of content
         8 // Average number of versions
     );
+```
 
 First we define the name of the type and then its fields. Each field should
 have a data provider assigned, which provides random test data.
@@ -80,8 +78,7 @@ Optionally we can define multiple languages in which content will be created.
 Also optionally an average number of versions can be defined to "age" content.
 You can define as many types as sensible.
 
-Actors
-------
+#### Actors
 
 Actors actually do something with the defined types. There are currently three
 different actors, but you could define more:
@@ -91,6 +88,7 @@ different actors, but you could define more:
   Creates content structures. You can stack multiple ``Create`` actors to
   create deep content structures::
 
+```php
     $createTask = new Task(
         new Actor\Create(
             1, $folderType,
@@ -106,6 +104,7 @@ different actors, but you could define more:
             )
         )
     );
+```
 
   This example will create a structure of folder types, which, in the end, will
   contain articles, which will contain comments. The specified numbers are the
@@ -119,11 +118,13 @@ different actors, but you could define more:
   This actors simulates an eZ Platform view operation of a content object by
   executing similar queries to the content repository::
 
+```php
     $viewTask = new Task(
         new Actor\SubtreeView(
             $articles
         )
     );
+```
 
   You should provide the actor with an object store so it can pick from a
   number of existing content objects which would be viewed by users of an
@@ -134,12 +135,12 @@ different actors, but you could define more:
   This actor just executes a search. Searches are specified as in the Public
   API or the SPI using a common ``Query`` object.
 
-Execution
----------
+#### Execution
 
 Finally we want to execute our configured scenario consisting of types and
 actors. For this an executor is used::
 
+```php
     $executor->run(
         array(
             new Constraint\Ratio( $createTask, 1/10 ),
@@ -149,6 +150,7 @@ actors. For this an executor is used::
         ),
         new Aborter\Count(200)
     );
+```
 
 The executor will be provided with an array of ``Constraint`` objects each
 associated with a task. In this case ``Constraint\Ratio`` objects are used,
@@ -161,12 +163,10 @@ the amount of create content objects or just abort after a given time span. The
 You might, like done in the example, define multiple executors which then will
 be executed subsequently.
 
-------------
 jMeter Tests
 ------------
 
-Usage
-=====
+### Usage
 
 The jMeter test can be run by just executing ``ant`` in the root directory. In
 the first run jMeter will be downloaded. In subsequent runs the already
@@ -183,8 +183,7 @@ statistics about the run:
 
   Simple grouping of response times by URL
 
-Configuration
-=============
+### Configuration
 
 You can configure the run by creating a file ``jmeter.properties.local`` to
 overwrite the variables in the ``jmeter.properties`` file. You definitely want
@@ -211,11 +210,3 @@ Another important configuration is the ``jmeter.users`` value. It defines how
 many users will access / surf the website in parallel. The default of 5 means
 that 5 users will simultaneously surf on the website. With the configured
 timings that means something between 1 Req/s and 2 Req/s.
-
-
-..
-   Local Variables:
-   mode: rst
-   fill-column: 79
-   End: 
-   vim: et syn=rst tw=79
