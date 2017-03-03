@@ -1,6 +1,6 @@
 {
     "name": "ezsystems/profiler-bundle",
-    "type": "symfony-bundle",
+    "type": "ezplatform-bundle",
     "require": {
         "php": "~5.4 || ~7.0",
         "ezsystems/ezpublish-kernel": "~5.3.5@dev || ~5.4.2@dev || ^6.0@dev",
