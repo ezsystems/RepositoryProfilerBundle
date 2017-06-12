@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
@@ -53,13 +54,14 @@ class ProfileCommand extends ContainerAwareCommand
     {
         $executor = $this->getContainer()->get('ezpublish.profiler.executor.' . $input->getArgument('target'));
 
-        $dialog = $this->getHelper('dialog');
+        $dialog = $this->getHelper('question');
         if ($input->getOption('seed')) {
             mt_srand($input->getOption('seed'));
         }
 
+        $question = new ConfirmationQuestion('Really run the profiler? This will reset the database.', false);
         if (!$input->getOption('yes') &&
-            !$dialog->askConfirmation($output, "<question>Really run the profiler? This will reset the database.</question>", false)) {
+            !$dialog->ask($input, $output, $question)) {
             return 1;
         }
 

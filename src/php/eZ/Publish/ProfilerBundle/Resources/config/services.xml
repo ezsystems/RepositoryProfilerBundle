@@ -71,9 +71,9 @@
 
         <!-- Should not be required, but is currently not exposed -->
         <service id="ezpublish.api.service.language"
-            factory-service="ezpublish.api.repository"
-            factory-method="getContentLanguageService"
             class="eZ\Publish\API\Repository\LanguageService">
+            <factory service="ezpublish.api.repository"
+                method="getContentLanguageService" />
         </service>
     </services>
 </container>
