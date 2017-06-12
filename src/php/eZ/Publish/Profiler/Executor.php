@@ -22,6 +22,10 @@ class Executor
             {
                 $constraint->run( $this, $this->logger );
             }
+
+            // Force garbage collection between runs so we do not hit it while
+            // running an executor which will fail the performance analysis.
+            gc_collect_cycles();
         } while ( !$aborter->shouldAbort() );
         $this->logger->stopExecutor( $this );
     }
