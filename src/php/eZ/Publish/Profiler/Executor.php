@@ -2,16 +2,21 @@
 
 namespace eZ\Publish\Profiler;
 
+use Tideways\Profiler;
+
 class Executor
 {
     protected $actorHandler;
 
     protected $logger;
 
+    protected $hasProfiler = false;
+
     public function __construct( Actor\Handler $actorHandler, Logger $logger = null )
     {
         $this->actorHandler = $actorHandler;
         $this->logger = $logger ?: new Logger\NullLogger();
+        $this->hasProfiler = class_exists(Profiler::class);
     }
 
     public function run( array $constraints, Aborter $aborter )
@@ -31,7 +36,16 @@ class Executor
         $actor = $task->getNext();
 
         $this->logger->startActor( $actor );
+        if ($this->hasProfiler) {
+            Profiler::start();
+            require __DIR__ . '/PapiWatches.php';
+            require __DIR__ . '/SpiWatches.php';
+            Profiler::setTransactionName( $actor->getName() );
+        }
         $this->visitActor( $actor );
+        if ($this->hasProfiler) {
+            Profiler::stop();
+        }
         $this->logger->stopActor( $actor );
     }
 
