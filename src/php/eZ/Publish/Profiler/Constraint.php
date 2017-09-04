@@ -6,11 +6,10 @@ abstract class Constraint
 {
     public $task;
 
-    public function __construct( Task $task )
+    public function __construct(Task $task)
     {
         $this->task = $task;
     }
 
-    abstract public function run( Executor $executor );
+    abstract public function run(Executor $executor);
 }
-

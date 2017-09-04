@@ -9,12 +9,11 @@ class RichText extends DataProvider
     public function get($languageCode)
     {
         $doc = new \DOMDocument();
-        $doc->loadXml( trim( '
+        $doc->loadXml(trim('
             <?xml version="1.0" encoding="UTF-8"?>
             <document/>
-        ' ) );
+        '));
 
-        return new \eZ\Publish\Core\FieldType\RichText\Value( $doc );
+        return new \eZ\Publish\Core\FieldType\RichText\Value($doc);
     }
 }
-

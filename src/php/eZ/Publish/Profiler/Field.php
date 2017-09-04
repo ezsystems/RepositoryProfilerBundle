@@ -10,16 +10,15 @@ abstract class Field
 
     public $translatable = true;
 
-    public function __construct( DataProvider $dataProvider )
+    public function __construct(DataProvider $dataProvider)
     {
         $this->dataProvider = $dataProvider;
     }
 
     /**
-     * Get type identifier
+     * Get type identifier.
      *
      * @return string
      */
     abstract public function getTypeIdentifier();
 }
-

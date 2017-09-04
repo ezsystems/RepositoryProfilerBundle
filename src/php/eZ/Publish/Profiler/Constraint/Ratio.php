@@ -10,18 +10,16 @@ class Ratio extends Constraint
 {
     public $ratio;
 
-    public function __construct( Task $task, $ratio )
+    public function __construct(Task $task, $ratio)
     {
-        parent::__construct( $task );
+        parent::__construct($task);
         $this->ratio = $ratio;
     }
 
-    public function run( Executor $executor )
+    public function run(Executor $executor)
     {
-        if ( ( mt_rand() / mt_getrandmax() ) < $this->ratio )
-        {
-            $executor->visitTask( $this->task );
+        if ((mt_rand() / mt_getrandmax()) < $this->ratio) {
+            $executor->visitTask($this->task);
         }
     }
 }
-

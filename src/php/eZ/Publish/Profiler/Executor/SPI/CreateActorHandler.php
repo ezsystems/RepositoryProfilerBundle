@@ -2,30 +2,28 @@
 
 namespace eZ\Publish\Profiler\Executor\SPI;
 
-use eZ\Publish\Profiler\Executor;
 use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
 use eZ\Publish\Profiler\Actor\Handler;
 use eZ\Publish\Profiler\GaussDistributor;
-
 use eZ\Publish\SPI\Persistence;
 
 class CreateActorHandler extends Handler
 {
     protected $handler;
 
-    protected $contentTypes = array();
+    protected $contentTypes = [];
 
     protected $fieldTypeRegistry;
 
-    public function __construct( Persistence\Handler $handler, CreateActorHandler\FieldTypeRegistry $fieldTypeRegistry )
+    public function __construct(Persistence\Handler $handler, CreateActorHandler\FieldTypeRegistry $fieldTypeRegistry)
     {
         $this->handler = $handler;
         $this->fieldTypeRegistry = $fieldTypeRegistry;
     }
 
     /**
-     * Can handle
+     * Can handle.
      *
      * @param Actor $actor
      * @return bool
@@ -36,69 +34,65 @@ class CreateActorHandler extends Handler
     }
 
     /**
-     * Handle
+     * Handle.
      *
      * @param Actor $actor
-     * @return void
      */
     public function handle(Actor $actor)
     {
-        $languages = array();
+        $languages = [];
         foreach ($actor->type->languageCodes as $languageCode) {
             $languages[$languageCode] = $this->getLanguage($languageCode, "Test ($languageCode)");
         }
 
         $mainLanguage = reset($languages);
-        $type = $this->getContentType( $actor->type, $languages );
+        $type = $this->getContentType($actor->type, $languages);
 
         $fields = $this->getFields($actor, $type, $languages);
         $contentHandler = $this->handler->contentHandler();
         $name = md5(microtime());
 
         $this->handler->beginTransaction();
-        $contentCreateSruct = new Persistence\Content\CreateStruct( array(
+        $contentCreateSruct = new Persistence\Content\CreateStruct([
             'name' => array_fill_keys(array_keys($languages), $name),
             'typeId' => $type->id,
             'sectionId' => 1,
             'ownerId' => 14,
-            'locations' => array(
-                new Persistence\Content\Location\CreateStruct( array(
+            'locations' => [
+                new Persistence\Content\Location\CreateStruct([
                     'remoteId' => 23, // Is currently 'ignored' and broken in the schema
                     'parentId' => $actor->parentLocationId,
-
-                ) ),
-            ),
+                ]),
+            ],
             'fields' => $fields,
-            'remoteId' => md5( microtime() ),
+            'remoteId' => md5(microtime()),
             'initialLanguageId' => $mainLanguage->id,
             'modified' => time(),
-        ) );
+        ]);
         $content = $contentHandler->create($contentCreateSruct);
         $content = $contentHandler->publish(
             $content->versionInfo->contentInfo->id,
             $content->versionInfo->versionNo,
-            new Persistence\Content\MetadataUpdateStruct( array(
+            new Persistence\Content\MetadataUpdateStruct([
                 'publicationDate' => time(),
                 'name' => $name,
-            ) )
+            ])
         );
         $content = $this->ageContent($actor, $content);
         $this->handler->commit();
 
         // Remember created content objects
-        $actor->storage->store( $content );
+        $actor->storage->store($content);
 
-        if ( $actor->subActor !== null )
-        {
+        if ($actor->subActor !== null) {
             $actor->subActor->parentLocationId = $content->versionInfo->contentInfo->mainLocationId;
         }
     }
 
     /**
-     * Age content
+     * Age content.
      *
      * @param Content $content
-     * @return void
      */
     protected function ageContent($actor, $content)
     {
@@ -117,10 +111,10 @@ class CreateActorHandler extends Handler
             $content = $contentHandler->publish(
                 $draft->versionInfo->contentInfo->id,
                 $draft->versionInfo->versionNo,
-                new Persistence\Content\MetadataUpdateStruct( array(
+                new Persistence\Content\MetadataUpdateStruct([
                     'publicationDate' => time(),
                     'name' => $content->versionInfo->contentInfo->name,
-                ) )
+                ])
             );
         }
 
@@ -128,28 +122,26 @@ class CreateActorHandler extends Handler
     }
 
     /**
-     * getFields
+     * getFields.
      *
      * @param mixed $param
-     * @return void
      */
     protected function getFields($actor, $type, array $languages)
     {
-        $fields = array();
+        $fields = [];
         $mainLanguage = reset($languages);
-        foreach ( $type->fieldDefinitions as $fieldDefinition )
-        {
-            $spiFieldType = $this->getFieldType( $fieldDefinition->fieldType );
+        foreach ($type->fieldDefinitions as $fieldDefinition) {
+            $spiFieldType = $this->getFieldType($fieldDefinition->fieldType);
             $profilerFieldType = $actor->type->fields[$fieldDefinition->identifier];
 
             $data = $profilerFieldType->dataProvider->get($mainLanguage->languageCode);
-            $value = $spiFieldType->acceptValue( $data );
-            $fields[] = new Persistence\Content\Field( array(
+            $value = $spiFieldType->acceptValue($data);
+            $fields[] = new Persistence\Content\Field([
                 'fieldDefinitionId' => $fieldDefinition->id,
                 'type' => $fieldDefinition->fieldType,
                 'languageCode' => $mainLanguage->languageCode,
-                'value' => $spiFieldType->toPersistenceValue( $value ),
-            ) );
+                'value' => $spiFieldType->toPersistenceValue($value),
+            ]);
 
             if ($profilerFieldType->translatable) {
                 foreach ($languages as $language) {
@@ -158,13 +150,13 @@ class CreateActorHandler extends Handler
                     }
 
                     $data = $profilerFieldType->dataProvider->get($language->languageCode);
-                    $value = $spiFieldType->acceptValue( $data );
-                    $fields[] = new Persistence\Content\Field( array(
+                    $value = $spiFieldType->acceptValue($data);
+                    $fields[] = new Persistence\Content\Field([
                         'fieldDefinitionId' => $fieldDefinition->id,
                         'type' => $fieldDefinition->fieldType,
                         'languageCode' => $language->languageCode,
-                        'value' => $spiFieldType->toPersistenceValue( $value ),
-                    ) );
+                        'value' => $spiFieldType->toPersistenceValue($value),
+                    ]);
                 }
             }
         }
@@ -173,40 +165,37 @@ class CreateActorHandler extends Handler
     }
 
     /**
-     * Get field type
+     * Get field type.
      *
      * @param string $name
      * @return FieldType
      */
-    protected function getFieldType( $name )
+    protected function getFieldType($name)
     {
         return $this->fieldTypeRegistry->getFieldType($name);
     }
 
     /**
-     * Get language
+     * Get language.
      *
      * @param string $languageCode
-     * @return void
      */
     protected function getLanguage($languageCode, $name)
     {
         $languageHandler = $this->handler->contentLanguageHandler();
 
         try {
-            return $languageHandler->loadByLanguageCode( $languageCode );
-        }
-        catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
-        {
+            return $languageHandler->loadByLanguageCode($languageCode);
+        } catch (\eZ\Publish\API\Repository\Exceptions\NotFoundException $e) {
             // Just continue creating the type
         }
 
         return $languageHandler->create(
-            new Persistence\Content\Language\CreateStruct( array(
+            new Persistence\Content\Language\CreateStruct([
                 'languageCode' => $languageCode,
                 'name' => $name,
                 'isEnabled' => true,
-            ) )
+            ])
         );
     }
 
@@ -215,26 +204,24 @@ class CreateActorHandler extends Handler
         $contentTypeHandler = $this->handler->contentTypeHandler();
         $identifier = 'profiler-content-type-group';
         try {
-            return $contentTypeHandler->loadGroupByIdentifier( $identifier );
-        }
-        catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
-        {
+            return $contentTypeHandler->loadGroupByIdentifier($identifier);
+        } catch (\eZ\Publish\API\Repository\Exceptions\NotFoundException $e) {
             // Just continue creating the type
         }
 
         return $contentTypeHandler->createGroup(
-            new Persistence\Content\Type\Group\CreateStruct( array(
+            new Persistence\Content\Type\Group\CreateStruct([
                 'name' => array_fill_keys(array_keys($languages), 'Profiler Group'),
                 'identifier' => $identifier,
                 'modified' => time(),
                 'modifierId' => 14,
                 'created' => time(),
                 'creatorId' => 14,
-            ) )
+            ])
         );
     }
 
-    protected function getContentType( $type, array $languages )
+    protected function getContentType($type, array $languages)
     {
         $identifier = 'profiler-' . $type->name;
         if (isset($this->contentTypes[$identifier])) {
@@ -243,24 +230,22 @@ class CreateActorHandler extends Handler
 
         $contentTypeHandler = $this->handler->contentTypeHandler();
         try {
-            return $this->contentTypes[$identifier] = $contentTypeHandler->loadByIdentifier( $identifier );
-        }
-        catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
-        {
+            return $this->contentTypes[$identifier] = $contentTypeHandler->loadByIdentifier($identifier);
+        } catch (\eZ\Publish\API\Repository\Exceptions\NotFoundException $e) {
             // Just continue creating the type
         }
 
-        $fields = array();
+        $fields = [];
         $position = 1;
         $group = $this->getContentTypeGroup($languages);
-        foreach ( $type->fields as $name => $field )
-        {
-            $fields[] = $this->prepareFieldDefinition( $name, $field, $languages, $position++ );
+        foreach ($type->fields as $name => $field) {
+            $fields[] = $this->prepareFieldDefinition($name, $field, $languages, $position++);
         }
 
         $mainLanguage = reset($languages);
+
         return $this->contentTypes[$identifier] = $contentTypeHandler->create(
-            new Persistence\Content\Type\CreateStruct( array(
+            new Persistence\Content\Type\CreateStruct([
                 'name' => array_fill_keys(array_keys($languages), $type->name),
                 'status' => Persistence\Content\Type::STATUS_DEFINED,
                 'identifier' => $identifier,
@@ -268,18 +253,18 @@ class CreateActorHandler extends Handler
                 'modifierId' => 14,
                 'created' => time(),
                 'creatorId' => 14,
-                'remoteId' => md5( microtime() ),
+                'remoteId' => md5(microtime()),
                 'isContainer' => true,
                 'fieldDefinitions' => $fields,
                 'initialLanguageId' => $mainLanguage->id,
-                'groupIds' => array( $group->id ),
-            ) )
+                'groupIds' => [$group->id],
+            ])
         );
     }
 
-    protected function prepareFieldDefinition( $name, Field $field, array $languages, $position )
+    protected function prepareFieldDefinition($name, Field $field, array $languages, $position)
     {
-        return new Persistence\Content\Type\FieldDefinition( array(
+        return new Persistence\Content\Type\FieldDefinition([
             'name' => array_fill_keys(array_keys($languages), $name),
             'identifier' => $name,
             'fieldType' => $field->getTypeIdentifier(),
@@ -287,6 +272,6 @@ class CreateActorHandler extends Handler
             'isSearchable' => $field->searchable,
             'fieldGroup' => 'main',
             'position' => $position,
-        ) );
+        ]);
     }
 }

@@ -7,7 +7,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * This is the class that validates and merges configuration from your
- * app/config files
+ * app/config files.
  */
 class Configuration implements ConfigurationInterface
 {
@@ -17,7 +17,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root( 'profiler_bundle' );
+        $rootNode = $treeBuilder->root('profiler_bundle');
 
         return $treeBuilder;
     }

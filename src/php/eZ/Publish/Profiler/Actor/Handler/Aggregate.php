@@ -8,17 +8,16 @@ use eZ\Publish\Profiler\Actor\Handler;
 class Aggregate extends Handler
 {
     /**
-     * Handlers
+     * Handlers.
      *
      * @var Handler[]
      */
-    private $handlers = array();
+    private $handlers = [];
 
     /**
      * @param Handler[] $handlers
-     * @return void
      */
-    public function __construct(array $handlers = array())
+    public function __construct(array $handlers = [])
     {
         foreach ($handlers as $handler) {
             $this->addHandler($handler);
@@ -26,10 +25,9 @@ class Aggregate extends Handler
     }
 
     /**
-     * Add handler
+     * Add handler.
      *
      * @param Handler $handler
-     * @return void
      */
     public function addHandler(Handler $handler)
     {
@@ -37,7 +35,7 @@ class Aggregate extends Handler
     }
 
     /**
-     * Can handle
+     * Can handle.
      *
      * @param Actor $actor
      * @return bool
@@ -48,10 +46,9 @@ class Aggregate extends Handler
     }
 
     /**
-     * Handle
+     * Handle.
      *
      * @param Actor $actor
-     * @return void
      */
     public function handle(Actor $actor)
     {
@@ -62,7 +59,7 @@ class Aggregate extends Handler
         }
 
         throw new \OutOfBoundsException(
-            "No handle found for actor " . get_class($actor)
+            'No handle found for actor ' . get_class($actor)
         );
     }
 }

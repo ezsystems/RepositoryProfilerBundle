@@ -3,7 +3,6 @@
 namespace eZ\Publish\Profiler\Actor;
 
 use eZ\Publish\Profiler\Actor;
-
 use eZ\Publish\API\Repository\Values\Content\Query;
 
 class Search extends Actor
@@ -12,10 +11,9 @@ class Search extends Actor
 
     public $query;
 
-    public function __construct( $name, Query $query )
+    public function __construct($name, Query $query)
     {
         $this->name = $name;
         $this->query = $query;
     }
 }
-

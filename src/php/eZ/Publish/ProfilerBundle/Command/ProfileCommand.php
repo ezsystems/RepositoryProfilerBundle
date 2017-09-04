@@ -8,9 +8,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
-
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
-
 use EzSystems\PlatformInstallerBundle\Installer;
 
 class ProfileCommand extends ContainerAwareCommand
@@ -67,24 +64,23 @@ class ProfileCommand extends ContainerAwareCommand
 
         if (!file_exists($profile = $input->getArgument('profile'))) {
             $output->writeln("<error>File $profile does not exist.</error>");
+
             return 1;
         }
 
         if (!$input->getOption('no-reset')) {
-            $this->resetDatabase( $output );
+            $this->resetDatabase($output);
         }
 
         $output->writeln("<info>Run $profile</info>");
-        include $profile;
+        require $profile;
 
-        $output->writeln("<info>Statistics</info>");
+        $output->writeln('<info>Statistics</info>');
         $output->writeln($this->getContainer()->get('ezpublish.profiler.logger')->showSummary());
     }
 
     /**
-     * Reset database
-     *
-     * @return void
+     * Reset database.
      */
     protected function resetDatabase(OutputInterface $output)
     {
@@ -97,9 +93,9 @@ class ProfileCommand extends ContainerAwareCommand
         $tempConnection = \Doctrine\DBAL\DriverManager::getConnection($parameters);
         $tempConnection->getSchemaManager()->dropAndCreateDatabase($name);
 
-        $output->writeln("<info>Install schema</info>");
+        $output->writeln('<info>Install schema</info>');
         $installer = new Installer\CleanInstaller($connection);
-        $installer->setOutput( $output );
+        $installer->setOutput($output);
         $installer->importSchema();
         $installer->importData();
 

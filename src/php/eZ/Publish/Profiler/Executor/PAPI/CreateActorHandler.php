@@ -5,7 +5,6 @@ namespace eZ\Publish\Profiler\Executor\PAPI;
 use eZ\Publish\API\Repository\LanguageService;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\ContentService;
-
 use eZ\Publish\Profiler\ContentType;
 use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
@@ -45,11 +44,11 @@ class CreateActorHandler extends Handler
         $this->contentService = $contentService;
 
         $this->contentTypeGroup = null;
-        $this->types = array();
+        $this->types = [];
     }
 
     /**
-     * Can handle
+     * Can handle.
      *
      * @param Actor $actor
      * @return bool
@@ -60,14 +59,13 @@ class CreateActorHandler extends Handler
     }
 
     /**
-     * Handle
+     * Handle.
      *
      * @param Actor $actor
-     * @return void
      */
     public function handle(Actor $actor)
     {
-        $languages = array();
+        $languages = [];
         foreach ($actor->type->languageCodes as $languageCode) {
             $languages[$languageCode] = $this->getLanguage($languageCode, "Test ($languageCode)");
         }
@@ -88,27 +86,26 @@ class CreateActorHandler extends Handler
         $contentCreate = $this->createFields($contentCreate, $actor->type->fields, $languages);
 
         $location = new \eZ\Publish\API\Repository\Values\Content\LocationCreateStruct(
-            array(
-                "remoteId" => sha1(microtime()),
-                "parentLocationId" => $actor->parentLocationId
-            )
+            [
+                'remoteId' => sha1(microtime()),
+                'parentLocationId' => $actor->parentLocationId,
+            ]
         );
 
-        $contentDraft = $this->contentService->createContent( $contentCreate, array( $location ) );
-        $content = $this->contentService->publishVersion( $contentDraft->versionInfo );
+        $contentDraft = $this->contentService->createContent($contentCreate, [$location]);
+        $content = $this->contentService->publishVersion($contentDraft->versionInfo);
         $content = $this->ageContent($actor->type, $content);
 
         // Remember created content objects
-        $actor->storage->store( $content );
+        $actor->storage->store($content);
 
-        if ( $actor->subActor !== null )
-        {
+        if ($actor->subActor !== null) {
             $actor->subActor->parentLocationId = $content->versionInfo->contentInfo->mainLocationId;
         }
     }
 
     /**
-     * Age content
+     * Age content.
      *
      * @param ContentType $type
      * @param Content $content
@@ -134,7 +131,7 @@ class CreateActorHandler extends Handler
     }
 
     /**
-     * createFields
+     * createFields.
      *
      * @param ContentCreate $contentCreate
      * @param Field[] $fields
@@ -143,10 +140,10 @@ class CreateActorHandler extends Handler
     protected function createFields($contentCreate, array $fields, array $languages)
     {
         $mainLanguage = reset($languages);
-        foreach( $fields as $identifier => $field ) {
+        foreach ($fields as $identifier => $field) {
             $contentCreate->setField(
                 $identifier,
-                $field->dataProvider->get( $mainLanguage->languageCode )
+                $field->dataProvider->get($mainLanguage->languageCode)
             );
 
             if ($field->translatable) {
@@ -157,7 +154,7 @@ class CreateActorHandler extends Handler
 
                     $contentCreate->setField(
                         $identifier,
-                        $field->dataProvider->get( $language->languageCode ),
+                        $field->dataProvider->get($language->languageCode),
                         $language->languageCode
                     );
                 }
@@ -168,7 +165,7 @@ class CreateActorHandler extends Handler
     }
 
     /**
-     * Get language
+     * Get language.
      *
      * @param string $languageCode
      * @return Language
@@ -189,7 +186,7 @@ class CreateActorHandler extends Handler
     }
 
     /**
-     * Return a contenttype group in case none exists yet one will be created
+     * Return a contenttype group in case none exists yet one will be created.
      *
      * @return \eZ\Publish\API\Repository\Values\ContentType\ContentTypeGroup
      */
@@ -197,10 +194,8 @@ class CreateActorHandler extends Handler
     {
         $identifier = 'profiler-content-type-group';
         try {
-            return $this->contentTypeService->loadContentTypeGroupByIdentifier( $identifier );
-        }
-        catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
-        {
+            return $this->contentTypeService->loadContentTypeGroupByIdentifier($identifier);
+        } catch (\eZ\Publish\API\Repository\Exceptions\NotFoundException $e) {
             // Just continue creating the type
         }
 
@@ -221,18 +216,16 @@ class CreateActorHandler extends Handler
      * @throws \RuntimeException
      * @return \eZ\Publish\Core\Repository\Values\ContentType\ContentType
      */
-    private function getContentType( ContentType $type, $languages )
+    private function getContentType(ContentType $type, $languages)
     {
         $identifier = 'profiler-' . $type->name;
         try {
-            return $this->contentTypeService->loadContentTypeByIdentifier( $identifier );
-        }
-        catch ( \eZ\Publish\API\Repository\Exceptions\NotFoundException $e )
-        {
+            return $this->contentTypeService->loadContentTypeByIdentifier($identifier);
+        } catch (\eZ\Publish\API\Repository\Exceptions\NotFoundException $e) {
             // Just continue creating the type
         }
 
-        $contentTypeCreate = $this->contentTypeService->newContentTypeCreateStruct( $identifier );
+        $contentTypeCreate = $this->contentTypeService->newContentTypeCreateStruct($identifier);
 
         $mainLanguage = reset($languages);
         $contentTypeCreate->mainLanguageCode = $mainLanguage->languageCode;
@@ -241,14 +234,13 @@ class CreateActorHandler extends Handler
         $contentTypeCreate->remoteId = sha1(microtime());
         $contentTypeCreate->isContainer = true;
         $contentTypeCreate->creatorId = 14;
-        $contentTypeCreate->nameSchema = "<name>";
-        $contentTypeCreate->urlAliasSchema = "<name>";
+        $contentTypeCreate->nameSchema = '<name>';
+        $contentTypeCreate->urlAliasSchema = '<name>';
 
         $fieldPosition = 1;
-        foreach ( $type->fields as $name => $field )
-        {
+        foreach ($type->fields as $name => $field) {
             $contentTypeCreate->addFieldDefinition(
-                $this->createFieldDefinition( $name, $field, $languages, $fieldPosition )
+                $this->createFieldDefinition($name, $field, $languages, $fieldPosition)
             );
             $fieldPosition += 1;
         }
@@ -256,9 +248,9 @@ class CreateActorHandler extends Handler
         try {
             $contentTypeDraft = $this->contentTypeService->createContentType(
                 $contentTypeCreate,
-                array(
-                    $this->getContentTypeGroup()
-                )
+                [
+                    $this->getContentTypeGroup(),
+                ]
             );
         } catch (\eZ\Publish\Core\Base\Exceptions\ContentTypeFieldDefinitionValidationException $e) {
             var_dump($e->getFieldErrors());
@@ -266,6 +258,7 @@ class CreateActorHandler extends Handler
         }
 
         $this->contentTypeService->publishContentTypeDraft($contentTypeDraft);
+
         return $this->contentTypeService->loadContentType($contentTypeDraft->id);
     }
 
@@ -284,7 +277,7 @@ class CreateActorHandler extends Handler
         );
 
         $fieldDefinitionCreate->names = array_fill_keys(array_keys($languages), ucfirst($name));
-        $fieldDefinitionCreate->fieldGroup = "main";
+        $fieldDefinitionCreate->fieldGroup = 'main';
         $fieldDefinitionCreate->position = $position;
         $fieldDefinitionCreate->isTranslatable = $field->translatable;
         $fieldDefinitionCreate->isRequired = false;

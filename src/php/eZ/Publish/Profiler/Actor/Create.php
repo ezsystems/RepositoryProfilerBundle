@@ -16,7 +16,7 @@ class Create extends Actor
 
     public $storage;
 
-    public function __construct( $count, $type, $subActor = null, Storage $storage = null )
+    public function __construct($count, $type, $subActor = null, Storage $storage = null)
     {
         $this->count = $count;
         $this->subActor = $subActor;
@@ -29,13 +29,13 @@ class Create extends Actor
         $this->iterations =
             $this->count === 1 ?
             $this->count :
-            GaussDistributor::getNumber( $this->count );
+            GaussDistributor::getNumber($this->count);
 
         return parent::getFlatList();
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -44,4 +44,3 @@ class Create extends Actor
         return 'Create Content';
     }
 }
-

@@ -10,7 +10,7 @@ class StringProvider extends DataProvider
     public function get($languageCode)
     {
         $faker = Faker\Factory::create();
+
         return $faker->catchPhrase;
     }
 }
-

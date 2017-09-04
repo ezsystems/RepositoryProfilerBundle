@@ -6,4 +6,3 @@ abstract class Aborter
 {
     abstract public function shouldAbort();
 }
-
