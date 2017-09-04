@@ -18,6 +18,8 @@ abstract class Handler
      * Handle.
      *
      * @param Actor $actor
+     *
+     * @throws \eZ\Publish\Profiler\Actor\Handler\Exception\ActorHandlerException
      */
     abstract public function handle(Actor $actor);
 }

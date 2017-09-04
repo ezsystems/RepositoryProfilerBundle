@@ -32,6 +32,11 @@
                             </service>
                         </argument>
                         <argument type="service">
+                            <service class="eZ\Publish\Profiler\Executor\SPI\SubtreeCopyActorHandler">
+                                <argument type="service" id="ezpublish.api.persistence_handler" />
+                            </service>
+                        </argument>
+                        <argument type="service">
                             <service class="eZ\Publish\Profiler\Executor\SPI\SearchActorHandler">
                                 <argument type="service" id="ezpublish.spi.search" />
                             </service>
@@ -63,6 +68,12 @@
                         </argument>
                         <argument type="service">
                             <service class="eZ\Publish\Profiler\Executor\PAPI\SubtreeRemoveActorHandler">
+                                <argument type="service" id="ezpublish.api.service.content" />
+                                <argument type="service" id="ezpublish.api.service.location" />
+                            </service>
+                        </argument>
+                        <argument type="service">
+                            <service class="eZ\Publish\Profiler\Executor\PAPI\SubtreeCopyActorHandler">
                                 <argument type="service" id="ezpublish.api.service.content" />
                                 <argument type="service" id="ezpublish.api.service.location" />
                             </service>
