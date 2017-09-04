@@ -32,6 +32,19 @@ class LimitedRandomized extends Storage
         return $this->storage[$key];
     }
 
+    public function pull()
+    {
+        if ( !count( $this->storage ) )
+        {
+            return null;
+        }
+
+        $key = array_rand( $this->storage );
+        $object = $this->storage[$key];
+        unset($this->storage[$key]);
+        return $object;
+    }
+
     public function reset()
     {
         $this->storage = array();

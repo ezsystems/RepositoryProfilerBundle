@@ -8,6 +8,8 @@ abstract class Storage
 
     abstract public function get();
 
+    abstract public function pull();
+
     abstract public function reset();
 }
 

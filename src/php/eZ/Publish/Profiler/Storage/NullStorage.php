@@ -20,5 +20,10 @@ class NullStorage extends Storage
     {
         // Just du nothing…
     }
+
+    public function pull()
+    {
+        // Just du nothing…
+    }
 }
 
