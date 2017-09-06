@@ -6,7 +6,6 @@ use eZ\Publish\API\Repository\LocationService;
 use eZ\Publish\API\Repository\SearchService;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
-
 use eZ\Publish\Profiler\Actor;
 use eZ\Publish\Profiler\Actor\Handler;
 
@@ -32,14 +31,15 @@ class SubtreeActorHandler extends Handler
      * @param \eZ\Publish\Core\Repository\LocationService $locationService
      * @param \eZ\Publish\Core\Repository\SearchService $searchService
      */
-    public function __construct( ContentService $contentService, LocationService $locationService, SearchService $searchService ) {
+    public function __construct(ContentService $contentService, LocationService $locationService, SearchService $searchService)
+    {
         $this->contentService = $contentService;
         $this->locationService = $locationService;
         $this->searchService = $searchService;
     }
 
     /**
-     * Can handle
+     * Can handle.
      *
      * @param Actor $actor
      * @return bool
@@ -50,17 +50,14 @@ class SubtreeActorHandler extends Handler
     }
 
     /**
-     * Handle
+     * Handle.
      *
      * @param Actor $actor
-     * @return void
      */
     public function handle(Actor $actor)
     {
-
         /** @var \eZ\Publish\Core\Repository\Values\Content\Content $content */
         $content = $actor->storage->get();
-
 
         if (!$content) {
             // If no content objects have been stored yet there is nothing to be read
@@ -76,9 +73,9 @@ class SubtreeActorHandler extends Handler
 
         $result = $this->searchService->findContent(
             new Query(
-                array(
-                    'filter' => new Criterion\Subtree( $locations[0]->pathString )
-                )
+                [
+                    'filter' => new Criterion\Subtree($locations[0]->pathString),
+                ]
             )
         );
     }

@@ -9,13 +9,13 @@ class SubtreeRemove extends Actor
 {
     public $storage;
 
-    public function __construct( Storage $storage )
+    public function __construct(Storage $storage)
     {
         $this->storage = $storage;
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -24,4 +24,3 @@ class SubtreeRemove extends Actor
         return 'Remove Subtree';
     }
 }
-

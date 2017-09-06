@@ -9,13 +9,13 @@ class TextBlock extends Field
 {
     public $searchable = false;
 
-    public function __construct( DataProvider $dataProvider = null )
+    public function __construct(DataProvider $dataProvider = null)
     {
-        parent::__construct( $dataProvider ?: new DataProvider\Text() );
+        parent::__construct($dataProvider ?: new DataProvider\Text());
     }
 
     /**
-     * Get type identifier
+     * Get type identifier.
      *
      * @return string
      */
@@ -24,4 +24,3 @@ class TextBlock extends Field
         return 'ezstring';
     }
 }
-

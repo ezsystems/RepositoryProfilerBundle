@@ -6,22 +6,22 @@ use eZ\Publish\Core\Base\Container\ApiLoader\FieldTypeCollectionFactory;
 
 class FieldTypeRegistry
 {
-    protected $fieldTypes = array();
+    protected $fieldTypes = [];
 
-    protected $evaluatedFieldTypes = array();
+    protected $evaluatedFieldTypes = [];
 
-    public function __construct( FieldTypeCollectionFactory $fieldTypeCollection )
+    public function __construct(FieldTypeCollectionFactory $fieldTypeCollection)
     {
         $this->fieldTypes = $fieldTypeCollection->getFieldTypes();
     }
 
     /**
-     * Get field type
+     * Get field type.
      *
      * @param string $name
      * @return FieldType
      */
-    public function getFieldType( $name )
+    public function getFieldType($name)
     {
         if (!isset($this->evaluatedFieldTypes[$name])) {
             if (!isset($this->fieldTypes[$name])) {

@@ -11,4 +11,3 @@ class NoAborter extends Aborter
         return false;
     }
 }
-

@@ -9,13 +9,13 @@ class Author extends Field
 {
     public $translatable = false;
 
-    public function __construct( DataProvider $dataProvider = null )
+    public function __construct(DataProvider $dataProvider = null)
     {
-        parent::__construct( $dataProvider ?: new DataProvider\AnonymousUser() );
+        parent::__construct($dataProvider ?: new DataProvider\AnonymousUser());
     }
 
     /**
-     * Get type identifier
+     * Get type identifier.
      *
      * @return string
      */
@@ -24,4 +24,3 @@ class Author extends Field
         return 'ezauthor';
     }
 }
-

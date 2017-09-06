@@ -10,13 +10,11 @@ abstract class Actor
 
     public function getFlatList()
     {
-        $list = array();
-        for ( $i = 0; $i < $this->iterations; ++$i )
-        {
+        $list = [];
+        for ($i = 0; $i < $this->iterations; ++$i) {
             $list[] = $this;
 
-            if ( $this->subActor !== null )
-            {
+            if ($this->subActor !== null) {
                 $list = array_merge(
                     $list,
                     $this->subActor->getFlatList()
@@ -28,7 +26,7 @@ abstract class Actor
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -41,4 +39,3 @@ abstract class Actor
         return get_class($this);
     }
 }
-

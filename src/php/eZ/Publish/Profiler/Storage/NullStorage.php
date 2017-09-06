@@ -6,7 +6,7 @@ use eZ\Publish\Profiler\Storage;
 
 class NullStorage extends Storage
 {
-    public function store( $object )
+    public function store($object)
     {
         // Just du nothing…
     }
@@ -26,4 +26,3 @@ class NullStorage extends Storage
         // Just du nothing…
     }
 }
-

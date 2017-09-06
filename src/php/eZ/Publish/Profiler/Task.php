@@ -8,24 +8,24 @@ class Task
 
     protected $actorList = null;
 
-    public function __construct( Actor $actor )
+    public function __construct(Actor $actor)
     {
         $this->actor = $actor;
     }
 
     public function getNext()
     {
-        if ( $this->actorList === null )
-        {
+        if ($this->actorList === null) {
             $this->initializeActorList();
-            return reset( $this->actorList );
+
+            return reset($this->actorList);
         }
 
-        $next = next( $this->actorList );
-        if ( $next === false )
-        {
+        $next = next($this->actorList);
+        if ($next === false) {
             $this->initializeActorList();
-            return reset( $this->actorList );
+
+            return reset($this->actorList);
         }
 
         return $next;
@@ -36,4 +36,3 @@ class Task
         $this->actorList = $this->actor->getFlatList();
     }
 }
-

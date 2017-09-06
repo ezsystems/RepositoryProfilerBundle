@@ -9,13 +9,13 @@ class SubtreeView extends Actor
 {
     public $storage;
 
-    public function __construct( Storage $storage )
+    public function __construct(Storage $storage)
     {
         $this->storage = $storage;
     }
 
     /**
-     * Get name
+     * Get name.
      *
      * @return string
      */
@@ -24,4 +24,3 @@ class SubtreeView extends Actor
         return 'View Subtree';
     }
 }
-

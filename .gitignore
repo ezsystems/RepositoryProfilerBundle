@@ -5,3 +5,4 @@ var/cache
 /build
 /apache-jmeter*
 /composer.phar
+/.php_cs.cache

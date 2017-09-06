@@ -9,12 +9,11 @@ class XmlText extends DataProvider
     public function get($languageCode)
     {
         $doc = new \DOMDocument();
-        $doc->loadXml( trim( '
+        $doc->loadXml(trim('
             <?xml version="1.0" ?>
             <document/>
-        ' ) );
+        '));
 
-        return new \eZ\Publish\Core\FieldType\XmlText\Value( $doc );
+        return new \eZ\Publish\Core\FieldType\XmlText\Value($doc);
     }
 }
-

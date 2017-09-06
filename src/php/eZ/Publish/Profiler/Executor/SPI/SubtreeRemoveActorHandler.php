@@ -1,24 +1,21 @@
 <?php
 namespace eZ\Publish\Profiler\Executor\SPI;
 
-use eZ\Publish\Profiler\Executor;
-use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
 use eZ\Publish\Profiler\Actor\Handler;
-
 use eZ\Publish\SPI\Persistence;
 
 class SubtreeRemoveActorHandler extends Handler
 {
     protected $handler;
 
-    public function __construct( Persistence\Handler $handler )
+    public function __construct(Persistence\Handler $handler)
     {
         $this->handler = $handler;
     }
 
     /**
-     * Can handle
+     * Can handle.
      *
      * @param Actor $actor
      * @return bool
@@ -29,10 +26,9 @@ class SubtreeRemoveActorHandler extends Handler
     }
 
     /**
-     * Handle
+     * Handle.
      *
      * @param Actor $actor
-     * @return void
      */
     public function handle(Actor $actor)
     {
@@ -44,6 +40,6 @@ class SubtreeRemoveActorHandler extends Handler
         }
 
         $locationHandler = $this->handler->locationHandler();
-        $location = $locationHandler->removeSubtree( $object->versionInfo->contentInfo->mainLocationId );
+        $location = $locationHandler->removeSubtree($object->versionInfo->contentInfo->mainLocationId);
     }
 }

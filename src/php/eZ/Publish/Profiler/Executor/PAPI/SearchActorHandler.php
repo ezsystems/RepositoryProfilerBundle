@@ -3,9 +3,6 @@
 namespace eZ\Publish\Profiler\Executor\PAPI;
 
 use eZ\Publish\API\Repository\SearchService;
-
-use eZ\Publish\Profiler\ContentType;
-use eZ\Publish\Profiler\Field;
 use eZ\Publish\Profiler\Actor;
 use eZ\Publish\Profiler\Actor\Handler;
 
@@ -19,12 +16,13 @@ class SearchActorHandler extends Handler
     /**
      * @param \eZ\Publish\Core\Repository\SearchService $searchService
      */
-    public function __construct( SearchService $searchService ) {
+    public function __construct(SearchService $searchService)
+    {
         $this->searchService = $searchService;
     }
 
     /**
-     * Can handle
+     * Can handle.
      *
      * @param Actor $actor
      * @return bool
@@ -35,10 +33,9 @@ class SearchActorHandler extends Handler
     }
 
     /**
-     * Handle
+     * Handle.
      *
      * @param Actor $actor
-     * @return void
      */
     public function handle(Actor $actor)
     {

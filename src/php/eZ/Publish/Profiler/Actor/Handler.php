@@ -7,7 +7,7 @@ use eZ\Publish\Profiler\Actor;
 abstract class Handler
 {
     /**
-     * Can handle
+     * Can handle.
      *
      * @param Actor $actor
      * @return bool
@@ -15,10 +15,9 @@ abstract class Handler
     abstract public function canHandle(Actor $actor);
 
     /**
-     * Handle
+     * Handle.
      *
      * @param Actor $actor
-     * @return void
      */
     abstract public function handle(Actor $actor);
 }

@@ -9,10 +9,9 @@ class User extends DataProvider
     public function get($languageCode)
     {
         return new \eZ\Publish\Core\FieldType\Author\Value(
-            array(
-                new \eZ\Publish\Core\FieldType\Author\Author( array( 'id' => 14 ) )
-            )
+            [
+                new \eZ\Publish\Core\FieldType\Author\Author(['id' => 14]),
+            ]
         );
     }
 }
-

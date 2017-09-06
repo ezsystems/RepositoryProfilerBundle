@@ -7,13 +7,13 @@ use eZ\Publish\Profiler\DataProvider;
 
 class RichText extends Field
 {
-    public function __construct( DataProvider $dataProvider = null )
+    public function __construct(DataProvider $dataProvider = null)
     {
-        parent::__construct( $dataProvider ?: new DataProvider\RichText() );
+        parent::__construct($dataProvider ?: new DataProvider\RichText());
     }
 
     /**
-     * Get type identifier
+     * Get type identifier.
      *
      * @return string
      */
@@ -22,4 +22,3 @@ class RichText extends Field
         return 'ezrichtext';
     }
 }
-

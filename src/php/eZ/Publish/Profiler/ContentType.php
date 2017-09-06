@@ -12,7 +12,7 @@ class ContentType
 
     public $versionCount;
 
-    public function __construct( $name, $fields, array $languageCodes, $versionCount = 1 )
+    public function __construct($name, $fields, array $languageCodes, $versionCount = 1)
     {
         $this->name = $name;
         $this->fields = $fields;
@@ -20,4 +20,3 @@ class ContentType
         $this->versionCount = $versionCount;
     }
 }
-

@@ -3,10 +3,6 @@ namespace eZ\Publish\Profiler\Executor\PAPI;
 
 use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\LocationService;
-use eZ\Publish\API\Repository\SearchService;
-use eZ\Publish\API\Repository\Values\Content\Query;
-use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
-
 use eZ\Publish\Profiler\Actor;
 use eZ\Publish\Profiler\Actor\Handler;
 
@@ -26,13 +22,14 @@ class SubtreeRemoveActorHandler extends Handler
      * @param \eZ\Publish\Core\Repository\ContentService $contentService
      * @param \eZ\Publish\Core\Repository\LocationService $locationService
      */
-    public function __construct( ContentService $contentService, LocationService $locationService) {
+    public function __construct(ContentService $contentService, LocationService $locationService)
+    {
         $this->contentService = $contentService;
         $this->locationService = $locationService;
     }
 
     /**
-     * Can handle
+     * Can handle.
      *
      * @param Actor $actor
      * @return bool
@@ -43,10 +40,9 @@ class SubtreeRemoveActorHandler extends Handler
     }
 
     /**
-     * Handle
+     * Handle.
      *
      * @param Actor $actor
-     * @return void
      */
     public function handle(Actor $actor)
     {

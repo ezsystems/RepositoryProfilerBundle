@@ -6,4 +6,3 @@ abstract class DataProvider
 {
     abstract public function get($languageCode);
 }
-

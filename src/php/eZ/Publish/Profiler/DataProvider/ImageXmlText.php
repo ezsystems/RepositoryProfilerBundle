@@ -11,4 +11,3 @@ class ImageXmlText extends DataProvider
         return null;
     }
 }
-

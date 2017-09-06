@@ -3,7 +3,6 @@
 namespace eZ\Publish\Profiler\Aborter;
 
 use eZ\Publish\Profiler\Aborter;
-use eZ\Publish\Core\Persistence\Legacy\EzcDbHandler;
 
 class Count extends Aborter
 {
@@ -11,14 +10,13 @@ class Count extends Aborter
 
     protected $iterationCount;
 
-    public function __construct( $iterationCount )
+    public function __construct($iterationCount)
     {
         $this->iterationCount = $iterationCount;
     }
 
     public function shouldAbort()
     {
-        return (++$this->count >= $this->iterationCount);
+        return ++$this->count >= $this->iterationCount;
     }
 }
-
