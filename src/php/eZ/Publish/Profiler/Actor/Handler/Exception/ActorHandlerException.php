@@ -4,7 +4,7 @@ namespace eZ\Publish\Profiler\Actor\Handler\Exception;
 
 use eZ\Publish\Profiler\Actor;
 use RuntimeException;
-use Throwable;
+use Exception;
 
 class ActorHandlerException extends RuntimeException
 {
@@ -13,7 +13,7 @@ class ActorHandlerException extends RuntimeException
      */
     protected $actor;
 
-    public function __construct(Actor $actor, $message = '', $code = 0, Throwable $previous = null)
+    public function __construct(Actor $actor, $message = '', $code = 0, Exception $previous = null)
     {
         parent::__construct(sprintf('Error occurred while executing %s: %s', get_class($actor), $message), $code, $previous);
 

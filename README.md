@@ -130,6 +130,19 @@ different actors, but you could define more:
   number of existing content objects which would be viewed by users of an
   application.
 
+* ``Actor\SubtreeCopy``
+
+  This actor executes a subtree copy operation. It's require two object stores: 
+  1st one with a nodes to copy and 2nd one with destination location. 
+  
+```php
+$copyTask = new Task(
+   new Actor\SubtreeCopy(
+    $articles, $folder
+   )
+);
+```  
+
 * ``Actor\Search``
 
   This actor just executes a search. Searches are specified as in the Public
