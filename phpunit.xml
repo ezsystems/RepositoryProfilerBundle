@@ -1,0 +1,29 @@
+<phpunit
+    backupGlobals="false"
+    backupStaticAttributes="false"
+    bootstrap="vendor/autoload.php"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    colors="true">
+    <php>
+        <ini name="error_reporting" value="-1"/>
+    </php>
+    <testsuites>
+        <testsuite name="eZ\Publish\Profiler">
+            <directory>src/php/eZ/Publish/Profiler/Tests/</directory>
+        </testsuite>
+        <testsuite name="eZ\Publish\ProfilerBundle">
+            <directory>src/php/eZ/Publish/Core/Repository/Tests</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist>
+            <directory>src</directory>
+            <exclude>
+                <directory>src/php/eZ/Publish/Profiler/Tests</directory>
+                <directory>src/php/eZ/Publish/ProfilerBundle/Tests</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>
